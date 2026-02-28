@@ -5,6 +5,26 @@
 
 ---
 
+## [0.5.0] — 2026-02-28
+> 커리큘럼 데이터 전면 교체 — 실제 옥한흠 제자훈련 교재 기준
+
+### Changed
+- **커리큘럼 시드 데이터 전면 교체** — AI 생성 데이터 → 실제 옥한흠 제자훈련 교재 기준
+  - 1권: 제자 훈련의 터다지기 (6과)
+  - 2권: 아무도 흔들 수 없는 나의 구원 (14과)
+  - 3권: 작은 예수가 되라 (12과)
+- **과당 암송 구절 2개로 확장** — `scripture2`, `verseText2` 컬럼 추가
+- **YouTube 암송 영상 연결** — 낙원제일교회 암송 재생목록 32개 영상 ID 매핑
+- **VersePage UI 개편** — 2개 구절 카드 분리 표시 + 복사/공유 기능 개선
+
+### 수정 파일
+- `backend/src/db/schema.ts` — scripture2, verseText2 컬럼 추가
+- `backend/src/db/seed.ts` — 32주 전면 교체 (실제 교재 기준)
+- `backend/drizzle/migrations/0003_yummy_senator_kelly.sql` — 마이그레이션
+- `frontend/src/pages/VersePage.tsx` — 2구절 표시 UI
+
+---
+
 ## [0.4.1] — 2026-02-28
 > 성구 암송 페이지 개선 — 실제 구절 본문 추가
 

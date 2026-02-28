@@ -10,6 +10,8 @@ interface CurriculumItem {
   title: string
   scripture: string
   verseText: string | null
+  scripture2: string | null
+  verseText2: string | null
   youtubeVideoId: string | null
 }
 
@@ -55,9 +57,17 @@ export default function VersePage() {
 
   function handleCopyOrShare() {
     if (!curr) return
-    const text = curr.verseText
-      ? `${curr.scripture}\n\n${curr.verseText}`
-      : curr.scripture
+    const parts: string[] = []
+    if (curr.scripture && curr.verseText) {
+      parts.push(`📖 ${curr.scripture}`)
+      parts.push(curr.verseText)
+    }
+    if (curr.scripture2 && curr.verseText2) {
+      parts.push('')
+      parts.push(`📖 ${curr.scripture2}`)
+      parts.push(curr.verseText2)
+    }
+    const text = parts.length > 0 ? parts.join('\n') : curr.scripture
     shareOrCopy(text, showToast)
   }
 
@@ -72,9 +82,9 @@ export default function VersePage() {
   return (
     <AppShell title={`${weekNumber}주차 성구 암송`} showBack>
       <div className="p-4 space-y-4">
-        {/* 암송 구절 카드 */}
+        {/* 암송 구절 1 */}
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
-          <p className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)] mb-3">이번 주 암송 구절</p>
+          <p className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)] mb-1">암송 구절 1</p>
           <p className="text-sm font-medium text-[var(--color-secondary)] font-[var(--font-ui)]">
             {curr?.scripture ?? '-'}
           </p>
@@ -83,17 +93,34 @@ export default function VersePage() {
               {curr.verseText}
             </p>
           )}
-          <button
-            onClick={handleCopyOrShare}
-            className="mt-4 text-xs text-[var(--color-secondary)] font-[var(--font-ui)] cursor-pointer flex items-center gap-1"
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-            </svg>
-            구절 복사
-          </button>
         </div>
+
+        {/* 암송 구절 2 */}
+        {curr?.scripture2 && (
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
+            <p className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)] mb-1">암송 구절 2</p>
+            <p className="text-sm font-medium text-[var(--color-secondary)] font-[var(--font-ui)]">
+              {curr.scripture2}
+            </p>
+            {curr.verseText2 && (
+              <p className="text-base text-[var(--color-text-primary)] font-[var(--font-body-kr)] leading-relaxed mt-3">
+                {curr.verseText2}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* 구절 복사/공유 버튼 */}
+        <button
+          onClick={handleCopyOrShare}
+          className="w-full flex items-center justify-center gap-2 py-3 text-xs text-[var(--color-secondary)] font-[var(--font-ui)] cursor-pointer bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+          구절 복사 / 공유
+        </button>
 
         {/* YouTube 영상 */}
         {curr?.youtubeVideoId && (
