@@ -14,3 +14,7 @@ jobible-way-firebase-adminsdk-*.json
 # IDE
 .vscode/
 .idea/
+
+# Root assets (원본 이미지 등)
+jobible_way.png
+제목 없음1.txt
