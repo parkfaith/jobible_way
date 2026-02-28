@@ -59,10 +59,38 @@ export default function WeekDetailPage() {
   }
 
   const noteMenus = [
-    { label: '설교 노트', desc: '주일/금요 설교 기록', path: `/weeks/${weekNumber}/sermon` },
-    { label: 'OIA 묵상', desc: '관찰·해석·적용 노트', path: `/weeks/${weekNumber}/oia` },
-    { label: '신앙 일기', desc: '이번 주 신앙 성찰', path: `/weeks/${weekNumber}/diary` },
-    { label: '성구 암송', desc: '암송 구절 연습', path: `/weeks/${weekNumber}/verse` },
+    {
+      label: '설교 노트', desc: '주일/금요 설교 기록', path: `/weeks/${weekNumber}/sermon`,
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'OIA 묵상', desc: '관찰·해석·적용 노트', path: `/weeks/${weekNumber}/oia`,
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+        </svg>
+      ),
+    },
+    {
+      label: '신앙 일기', desc: '이번 주 신앙 성찰', path: `/weeks/${weekNumber}/diary`,
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+        </svg>
+      ),
+    },
+    {
+      label: '성구 암송', desc: '암송 구절 연습', path: `/weeks/${weekNumber}/verse`,
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+        </svg>
+      ),
+    },
   ]
 
   const checkItems = [
@@ -97,9 +125,12 @@ export default function WeekDetailPage() {
             <button
               key={menu.path}
               onClick={() => navigate(menu.path)}
-              className="w-full flex items-center justify-between p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl cursor-pointer transition-shadow hover:shadow-md"
+              className="w-full flex items-center gap-3 p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl cursor-pointer transition-shadow hover:shadow-md"
             >
-              <div className="text-left">
+              <div className="w-9 h-9 rounded-lg bg-[var(--color-secondary)]/15 flex items-center justify-center text-[var(--color-secondary)] flex-shrink-0">
+                {menu.icon}
+              </div>
+              <div className="text-left flex-1">
                 <p className="text-sm font-medium text-[var(--color-text-primary)] font-[var(--font-ui)]">{menu.label}</p>
                 <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{menu.desc}</p>
               </div>
