@@ -5,6 +5,24 @@
 
 ---
 
+## [0.6.0] — 2026-02-28
+> 첫 배포 — Render + Vercel + Turso
+
+### Added
+- **배포 인프라 구축**
+  - 백엔드: Render (Free) — `https://jobible-way-api.onrender.com`
+  - 프론트엔드: Vercel (Hobby) — `https://jobible-way.vercel.app`
+  - DB: Turso (Free)
+
+### Changed
+- 백엔드 빌드를 `tsc` → `tsup` 번들링으로 변경 (ESM 모듈 resolve 문제 해결)
+- `tsup`을 dependencies로 이동 (Render 프로덕션 빌드 호환)
+
+### 수정 파일
+- `backend/package.json` — build/start 스크립트 변경, tsup 추가
+
+---
+
 ## [0.5.0] — 2026-02-28
 > 커리큘럼 데이터 전면 교체 — 실제 옥한흠 제자훈련 교재 기준
 
