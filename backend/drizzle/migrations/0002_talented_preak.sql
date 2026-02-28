@@ -1,0 +1,1 @@
+ALTER TABLE `curriculum` ADD `verse_text` text;

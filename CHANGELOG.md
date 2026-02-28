@@ -5,6 +5,26 @@
 
 ---
 
+## [0.4.1] — 2026-02-28
+> 성구 암송 페이지 개선 — 실제 구절 본문 추가
+
+### Added
+- `curriculum` 테이블에 `verse_text` 컬럼 추가 — 암송 구절 본문 저장
+- 시드 데이터에 32주 전체 암송 성경 구절 본문(개역개정) 추가
+- VersePage에 공유/복사 기능 추가 (`shareOrCopy` 연동)
+
+### Changed
+- VersePage UI 개선 — 성경 주소(예: 요한일서 5:11-13)와 구절 본문을 분리 표시
+- 구절 복사 시 주소 + 본문 함께 복사
+
+### 수정 파일
+- `backend/src/db/schema.ts` — curriculum 테이블에 verseText 컬럼
+- `backend/src/db/seed.ts` — 32주 verseText 데이터 추가
+- `backend/drizzle/migrations/0002_talented_preak.sql` — 마이그레이션
+- `frontend/src/pages/VersePage.tsx` — UI 개선 + 공유 기능
+
+---
+
 ## [0.4.0] — 2026-02-28
 > QA 수정 & 배포 준비
 

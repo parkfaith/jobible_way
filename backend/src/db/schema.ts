@@ -18,6 +18,7 @@ export const curriculum = sqliteTable('curriculum', {
   title: text('title').notNull(),
   theme: text('theme'),
   scripture: text('scripture').notNull(),
+  verseText: text('verse_text'),
   youtubeVideoId: text('youtube_video_id'),
   requiredBook: text('required_book'),
 })

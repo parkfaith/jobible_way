@@ -3,11 +3,13 @@ import { useParams } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
 import { api } from '../lib/api'
 import { useToast } from '../components/ui/Toast'
+import { shareOrCopy } from '../lib/share'
 
 interface CurriculumItem {
   weekNumber: number
   title: string
   scripture: string
+  verseText: string | null
   youtubeVideoId: string | null
 }
 
@@ -51,14 +53,12 @@ export default function VersePage() {
     }
   }
 
-  async function copyScripture() {
-    if (!curr?.scripture) return
-    try {
-      await navigator.clipboard.writeText(curr.scripture)
-      showToast('성구가 복사되었습니다')
-    } catch {
-      showToast('복사 실패', 'error')
-    }
+  function handleCopyOrShare() {
+    if (!curr) return
+    const text = curr.verseText
+      ? `${curr.scripture}\n\n${curr.verseText}`
+      : curr.scripture
+    shareOrCopy(text, showToast)
   }
 
   if (loading) {
@@ -74,13 +74,18 @@ export default function VersePage() {
       <div className="p-4 space-y-4">
         {/* 암송 구절 카드 */}
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
-          <p className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)] mb-2">이번 주 암송 구절</p>
-          <p className="text-lg font-semibold text-[var(--color-primary)] font-[var(--font-heading)] leading-relaxed">
+          <p className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)] mb-3">이번 주 암송 구절</p>
+          <p className="text-sm font-medium text-[var(--color-secondary)] font-[var(--font-ui)]">
             {curr?.scripture ?? '-'}
           </p>
+          {curr?.verseText && (
+            <p className="text-base text-[var(--color-text-primary)] font-[var(--font-body-kr)] leading-relaxed mt-3">
+              {curr.verseText}
+            </p>
+          )}
           <button
-            onClick={copyScripture}
-            className="mt-3 text-xs text-[var(--color-secondary)] font-[var(--font-ui)] cursor-pointer flex items-center gap-1"
+            onClick={handleCopyOrShare}
+            className="mt-4 text-xs text-[var(--color-secondary)] font-[var(--font-ui)] cursor-pointer flex items-center gap-1"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
