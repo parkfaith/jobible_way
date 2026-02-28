@@ -1,46 +1,63 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+const DISMISSED_KEY = 'pwa-install-dismissed'
+
 let deferredPrompt: BeforeInstallPromptEvent | null = null
 
+// 모듈 로드 시 바로 리스너 등록 (컴포넌트 렌더 전에 이벤트 캡처)
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    deferredPrompt = e as BeforeInstallPromptEvent
+  })
+}
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || (navigator as any).standalone === true
+}
+
+function isIos() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+}
+
 export function usePwaInstall() {
-  const [canInstall, setCanInstall] = useState(false)
+  const [showBanner, setShowBanner] = useState(false)
 
   useEffect(() => {
-    // 이미 캡처된 이벤트가 있으면 바로 사용
-    if (deferredPrompt) {
-      setCanInstall(true)
-      return
-    }
-
-    function handler(e: Event) {
-      e.preventDefault()
-      deferredPrompt = e as BeforeInstallPromptEvent
-      setCanInstall(true)
-    }
-
-    window.addEventListener('beforeinstallprompt', handler)
-
-    // 이미 설치된 경우 (standalone 모드)
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setCanInstall(false)
-    }
-
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    if (isStandalone()) return
+    if (localStorage.getItem(DISMISSED_KEY)) return
+    setShowBanner(true)
   }, [])
 
-  async function install() {
-    if (!deferredPrompt) return false
-    await deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    deferredPrompt = null
-    setCanInstall(false)
-    return outcome === 'accepted'
-  }
+  const install = useCallback(async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      deferredPrompt = null
+      if (outcome === 'accepted') {
+        setShowBanner(false)
+        return true
+      }
+    }
+    return false
+  }, [])
 
-  return { canInstall, install }
+  const dismiss = useCallback(() => {
+    setShowBanner(false)
+    localStorage.setItem(DISMISSED_KEY, '1')
+  }, [])
+
+  return {
+    showBanner,
+    hasNativePrompt: !!deferredPrompt,
+    isIos: isIos(),
+    install,
+    dismiss,
+  }
 }
