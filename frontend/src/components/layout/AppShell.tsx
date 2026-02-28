@@ -24,7 +24,7 @@ export default function AppShell({ title, showBack = false, children, rightActio
     <div className="min-h-dvh flex flex-col">
       {/* Header */}
       {title && (
-        <header className="sticky top-0 z-40 bg-[var(--color-surface)]/95 backdrop-blur-sm border-b border-[var(--color-border)]">
+        <header className="sticky top-0 z-40 bg-[var(--color-surface)]/95 backdrop-blur-sm border-b border-[var(--color-border)] pt-[env(safe-area-inset-top)]">
           <div className="flex items-center justify-between h-14 px-4">
             <div className="flex items-center gap-1">
               {showBack && (
