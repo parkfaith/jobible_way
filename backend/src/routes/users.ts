@@ -25,7 +25,7 @@ usersRoute.post('/', requireAuth, async (c) => {
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
   const { name, email, startDate } = body
-  if (!name || !email) return c.json({ error: 'name and email are required' }, 400)
+  if (!name || !email || !startDate) return c.json({ error: 'name, email and startDate are required' }, 400)
   await db.insert(users).values({ id: userId, name, email, startDate })
     .onConflictDoUpdate({ target: users.id, set: { name } })
   return c.json({ ok: true })

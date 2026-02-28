@@ -32,10 +32,13 @@ export default function OiaPage() {
     loadNotes()
   }, [weekNumber])
 
-  // 컴포넌트 언마운트 시 타이머 정리
+  const pendingSave = useRef<OiaNote | null>(null)
+
+  // 컴포넌트 언마운트 시 대기 중인 저장 즉시 실행
   useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
+      if (pendingSave.current) autoSave(pendingSave.current)
     }
   }, [])
 
@@ -67,8 +70,12 @@ export default function OiaPage() {
   function handleChange(field: keyof OiaNote, value: string) {
     const updated = { ...current, [field]: value }
     setCurrent(updated)
+    pendingSave.current = updated
     if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => autoSave(updated), 1500)
+    saveTimer.current = setTimeout(() => {
+      pendingSave.current = null
+      autoSave(updated)
+    }, 1500)
   }
 
   async function autoSave(toSave: OiaNote) {
@@ -90,6 +97,7 @@ export default function OiaPage() {
   }
 
   async function handleDelete(id: number) {
+    if (!confirm('이 묵상을 삭제하시겠습니까?')) return
     try {
       await api.del(`/api/oia/${id}`)
       setNotes(prev => prev.filter(n => n.id !== id))

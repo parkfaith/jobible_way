@@ -123,7 +123,7 @@ export default function VersePage() {
         </button>
 
         {/* YouTube 영상 */}
-        {curr?.youtubeVideoId && (
+        {curr?.youtubeVideoId && /^[a-zA-Z0-9_-]{11}$/.test(curr.youtubeVideoId) && (
           <div className="rounded-xl overflow-hidden">
             <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
               <iframe

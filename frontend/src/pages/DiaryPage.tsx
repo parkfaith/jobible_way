@@ -12,15 +12,17 @@ export default function DiaryPage() {
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSave = useRef<string | null>(null)
 
   useEffect(() => {
     loadDiary()
   }, [weekNumber])
 
-  // 컴포넌트 언마운트 시 타이머 정리
+  // 컴포넌트 언마운트 시 대기 중인 저장 즉시 실행
   useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
+      if (pendingSave.current !== null) autoSave(pendingSave.current)
     }
   }, [])
 
@@ -38,8 +40,12 @@ export default function DiaryPage() {
 
   function handleChange(value: string) {
     setContent(value)
+    pendingSave.current = value
     if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => autoSave(value), 1500)
+    saveTimer.current = setTimeout(() => {
+      pendingSave.current = null
+      autoSave(value)
+    }, 1500)
   }
 
   async function autoSave(text: string) {

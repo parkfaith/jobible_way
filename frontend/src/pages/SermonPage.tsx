@@ -28,17 +28,23 @@ export default function SermonPage() {
   const [data, setData] = useState<SermonData>({ ...EMPTY })
   const [loading, setLoading] = useState(true)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSave = useRef<(() => Promise<void>) | null>(null)
 
   useEffect(() => {
-    // 탭 변경 시 대기 중인 저장 타이머 클리어
+    // 탭 변경 시 대기 중인 저장 즉시 실행
     if (saveTimer.current) clearTimeout(saveTimer.current)
+    if (pendingSave.current) {
+      pendingSave.current()
+      pendingSave.current = null
+    }
     loadSermon()
   }, [service, weekNumber])
 
-  // 컴포넌트 언마운트 시 타이머 정리
+  // 컴포넌트 언마운트 시 대기 중인 저장 즉시 실행
   useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
+      if (pendingSave.current) pendingSave.current()
     }
   }, [])
 
@@ -66,13 +72,18 @@ export default function SermonPage() {
     // service와 weekNumber를 클로저가 아닌 현재 값으로 캡처
     const currentService = service
     const currentWeek = weekNumber
-    saveTimer.current = setTimeout(async () => {
+    const saveFn = async () => {
       if (!updated.date) return
       try {
         await api.put(`/api/weeks/${currentWeek}/sermon/${currentService}`, updated)
       } catch {
         showToast('저장 실패', 'error')
       }
+    }
+    pendingSave.current = saveFn
+    saveTimer.current = setTimeout(() => {
+      pendingSave.current = null
+      saveFn()
     }, 1500)
   }
 

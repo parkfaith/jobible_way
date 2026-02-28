@@ -52,6 +52,7 @@ sermonRoute.put('/:service', requireAuth, async (c) => {
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
   const { date, preacher, scripture, content } = body
+  if (!date) return c.json({ error: 'date is required' }, 400)
 
   const [existing] = await db.select().from(sermonNotes)
     .where(and(

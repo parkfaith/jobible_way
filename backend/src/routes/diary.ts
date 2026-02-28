@@ -26,7 +26,13 @@ diaryRoute.put('/', requireAuth, async (c) => {
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
     return c.json({ error: 'Invalid week number' }, 400)
   }
-  const { content } = await c.req.json<{ content: string }>()
+  let body: { content: string }
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400)
+  }
+  const { content } = body
 
   const [existing] = await db.select().from(diaryEntries)
     .where(and(eq(diaryEntries.userId, userId), eq(diaryEntries.weekNumber, weekNumber)))
