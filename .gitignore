@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.local
+.env.production
+dist/
+.turso/
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Firebase service account key
+jobible-way-firebase-adminsdk-*.json
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jobible Way – Design Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Serif+KR:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --primary: #1A2E4A;
+      --gold:    #C9A84C;
+      --bg:      #FAF8F5;
+      --surface: #FFFFFF;
+      --text:    #1F1F1F;
+      --muted:   #6B7280;
+      --success: #4A7C59;
+      --border:  #E5E0D8;
+      --serif: 'Cormorant Garamond', 'Noto Serif KR', Georgia, serif;
+      --sans:  'Inter', 'Noto Serif KR', system-ui, sans-serif;
+    }
+
+    /* ── Page Shell ─────────────────────────────────── */
+    body {
+      background: #BFB8AC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--sans);
+      padding: 24px 16px 40px;
+      gap: 12px;
+    }
+    .preview-badge {
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 18px;
+      border-radius: 100px;
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.3px;
+      pointer-events: none;
+    }
+
+    /* ── Phone Frame ─────────────────────────────────── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 50px;
+      box-shadow:
+        0 0 0 2px #2a2a2a,
+        0 0 0 4px #444,
+        0 60px 120px rgba(0,0,0,0.5);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ── Status Bar ─────────────────────────────────── */
+    .status-bar {
+      height: 48px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .status-time { color:#fff; font-size:15px; font-weight:600; }
+    .status-icons { display:flex; gap:5px; align-items:center; }
+    .status-icons svg { width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2; }
+
+    /* ── Screen Container ───────────────────────────── */
+    .screens {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      background: var(--bg);
+    }
+    .screen.active { display: flex; }
+    .screen::-webkit-scrollbar { width: 0; }
+
+    /* ── Bottom Nav ──────────────────────────────────── */
+    .bottom-nav {
+      height: 82px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: none;
+      align-items: center;
+      justify-content: space-around;
+      padding: 6px 0 18px;
+      flex-shrink: 0;
+    }
+    .bottom-nav.visible { display: flex; }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: 12px;
+      transition: background 0.15s;
+    }
+    .nav-item:hover { background: rgba(26,46,74,0.05); }
+    .nav-item svg { width:22px; height:22px; stroke:var(--muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke 0.15s; }
+    .nav-label { font-size:10px; color:var(--muted); font-weight:500; transition:color 0.15s; }
+    .nav-item.active svg { stroke: var(--primary); }
+    .nav-item.active .nav-label { color: var(--primary); font-weight:700; }
+
+    /* ── Shared Components ───────────────────────────── */
+    .page-header {
+      background: var(--primary);
+      padding: 14px 20px 18px;
+      flex-shrink: 0;
+    }
+    .page-header .h1 {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .page-header .sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 3px;
+    }
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px 24px;
+    }
+    .scroll-body::-webkit-scrollbar { width:0; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* Progress bar */
+    .prog-track {
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), #DEBC6A);
+      border-radius: 3px;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Gold accent line */
+    .gold-line {
+      display: inline-block;
+      width: 24px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 1px;
+      margin-bottom: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+      text-align: center;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-gold   { background: var(--gold); color: var(--primary); }
+    .btn-navy   { background: var(--primary); color: #fff; }
+    .btn-green  { background: var(--success); color: #fff; }
+
+    /* iOS Toggle */
+    .toggle {
+      width: 48px;
+      height: 28px;
+      background: #D1D5DB;
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.25s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--success); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: #fff;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .toggle.on::after { transform: translateX(20px); }
+
+    /* Checkbox */
+    .chk {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      display: flex; align-items:center; justify-content:center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .chk.on { background: var(--success); border-color: var(--success); }
+    .chk svg { opacity:0; transition: opacity 0.2s; }
+    .chk.on svg { opacity:1; }
+
+    /* Task row */
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-text { font-size: 14px; color: var(--text); flex:1; }
+    .task-text.done { text-decoration: line-through; color: var(--muted); }
+    .task-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: rgba(26,46,74,0.07);
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    /* ── 1. ONBOARDING ───────────────────────────────── */
+    #s-onboarding {
+      background: var(--primary);
+      align-items: center;
+      justify-content: center;
+      padding: 32px 28px;
+      gap: 0;
+    }
+    .ob-logo {
+      width: 72px; height: 72px;
+      background: var(--gold);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(201,168,76,0.4);
+    }
+    .ob-logo svg { width:40px; height:40px; }
+    .ob-brand {
+      font-family: var(--serif);
+      font-size: 34px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .ob-brand span { color: var(--gold); }
+    .ob-tagline {
+      font-family: var(--serif);
+      font-size: 15px;
+      font-style: italic;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 6px;
+    }
+    .ob-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .verse-box {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 40px;
+    }
+    .verse-box .vtext {
+      font-family: var(--serif);
+      font-size: 15px;
+      font-style: italic;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.75;
+      margin-bottom: 8px;
+    }
+    .verse-box .vref {
+      font-size: 12px;
+      color: var(--gold);
+      text-align: right;
+    }
+    .ob-login {
+      margin-top: 14px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      text-align: center;
+    }
+    .ob-login:hover { color: rgba(255,255,255,0.7); }
+
+    /* ── 2. DASHBOARD ────────────────────────────────── */
+    .dash-header {
+      background: var(--primary);
+      padding: 12px 20px 18px;
+      flex-shrink: 0;
+    }
+    .dash-greet { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 3px; }
+    .dash-title { font-family: var(--serif); font-size: 22px; font-weight:600; color:#fff; }
+    .dash-bell {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex; align-items:center; justify-content:center;
+      cursor: pointer;
+    }
+    .dash-bell svg { stroke:#fff; width:18px; height:18px; fill:none; stroke-width:2; }
+
+    .week-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #243F60 100%);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .week-hero::before {
+      content:'';
+      position:absolute;
+      top: -40px; right: -40px;
+      width: 130px; height: 130px;
+      background: rgba(201,168,76,0.08);
+      border-radius: 50%;
+    }
+    .week-eyebrow {
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .week-name {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .week-range {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 14px;
+    }
+    .prog-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .prog-row span:first-child { font-size:11px; color:rgba(255,255,255,0.6); }
+    .prog-row .pct { font-size:14px; font-weight:700; color:var(--gold); }
+
+    /* Today checks */
+    .check-row { display: flex; gap: 8px; }
+    .check-cell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .check-bubble {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      display: flex; align-items:center; justify-content:center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .check-bubble.done {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    .check-bubble svg { width:18px; height:18px; stroke:var(--muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke 0.2s; }
+    .check-bubble.done svg { stroke:#fff; }
+    .check-name { font-size:11px; color:var(--muted); font-weight:500; }
+
+    /* Memory verse banner */
+    .mv-banner {
+      background: linear-gradient(135deg, #F6F0E6, #EDE5D2);
+      border: 1px solid rgba(201,168,76,0.28);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .mv-label { font-size:11px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+    .mv-text  { font-family:var(--serif); font-size:14px; color:var(--primary); line-height:1.7; font-style:italic; }
+    .mv-ref   { font-size:11px; color:var(--muted); margin-top:5px; }
+
+    /* ── 3. DAILY CHECK ──────────────────────────────── */
+    .streak-card {
+      background: linear-gradient(135deg, var(--primary), #243F60);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .streak-num {
+      font-family: var(--serif);
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .streak-info .s1 { font-size:14px; color:rgba(255,255,255,0.85); font-weight:600; }
+    .streak-info .s2 { font-size:12px; color:rgba(255,255,255,0.45); margin-top:2px; }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .tog-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items:center; justify-content:center;
+      flex-shrink: 0;
+    }
+    .tog-icon svg { width:20px; height:20px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .tog-info { flex:1; }
+    .tog-title { font-size:14px; font-weight:600; color:var(--text); }
+    .tog-desc  { font-size:12px; color:var(--muted); margin-top:2px; }
+
+    /* ── 4. WEEKLY LIST ──────────────────────────────── */
+    .prog-overview {
+      background: var(--primary);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border: none;
+    }
+    .prog-overview-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .prog-overview-top span { font-size:12px; color:rgba(255,255,255,0.6); }
+    .prog-overview-top strong { font-family:var(--serif); font-size:22px; color:var(--gold); }
+
+    .book-section { margin-bottom: 18px; }
+    .book-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--primary);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+    }
+    .book-hdr .bicon {
+      width: 30px; height: 30px;
+      background: var(--gold);
+      border-radius: 8px;
+      display: flex; align-items:center; justify-content:center;
+      font-size: 14px;
+    }
+    .book-hdr .bname { font-family:var(--serif); font-size:15px; color:#fff; font-weight:600; }
+    .book-hdr .brange { font-size:11px; color:rgba(255,255,255,0.5); }
+
+    .week-row {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all 0.18s;
+      gap: 12px;
+    }
+    .week-row:hover { border-color: var(--gold); transform: translateX(2px); }
+    .week-row.current { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+    .week-row.faded { opacity: 0.45; }
+    .wnum {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items:center; justify-content:center;
+      font-size: 12px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .wnum.done    { background:var(--success); color:#fff; }
+    .wnum.current { background:var(--gold); color:var(--primary); }
+    .wnum.pending { background:var(--border); color:var(--muted); }
+    .winfo { flex:1; }
+    .winfo .wt { font-size:13px; font-weight:600; color:var(--text); }
+    .winfo .wp { font-size:11px; color:var(--muted); margin-top:1px; }
+    .wdots { display:flex; gap:3px; }
+    .dot { width:6px; height:6px; border-radius:50%; background:var(--border); }
+    .dot.g { background:var(--success); }
+    .dot.gold { background:var(--gold); }
+    .week-row.current .winfo .wt { color: var(--primary); }
+
+    /* ── 5. WEEKLY DETAIL ────────────────────────────── */
+    .note-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .note-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .note-card:hover { border-color:var(--primary); transform:translateY(-2px); box-shadow:0 4px 12px rgba(26,46,74,0.1); }
+    .nc-icon {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display: flex; align-items:center; justify-content:center;
+      margin-bottom: 9px;
+    }
+    .nc-icon svg { width:18px; height:18px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .nc-title { font-size:13px; font-weight:600; color:var(--text); }
+    .nc-sub   { font-size:11px; color:var(--muted); margin-top:3px; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+    .back-btn:hover { color: #fff; }
+    .back-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; }
+
+    /* ── 6. OIA ──────────────────────────────────────── */
+    .passage-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(26,46,74,0.07);
+      border: 1px solid rgba(26,46,74,0.12);
+      border-radius: 100px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .passage-chip svg { width:13px; height:13px; stroke:var(--primary); fill:none; stroke-width:2; }
+
+    .oia-field { margin-bottom: 16px; }
+    .oia-lbl {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .oia-badge {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      display: flex; align-items:center; justify-content:center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .oia-lbl-text .fn { font-size:14px; font-weight:600; color:var(--text); }
+    .oia-lbl-text .fd { font-size:11px; color:var(--muted); margin-top:2px; }
+    textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      font-family: var(--sans);
+      color: var(--text);
+      background: var(--surface);
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.65;
+    }
+    textarea:focus { border-color: var(--primary); }
+    textarea::placeholder { color: #C4BDB4; }
+
+    /* ── 7. PROGRESS ─────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-n {
+      font-family: var(--serif);
+      font-size: 34px;
+      font-weight: 600;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-n.gold { color: var(--gold); }
+    .stat-l { font-size: 12px; color: var(--muted); }
+
+    /* Donut */
+    .donut-wrap { display:flex; align-items:center; gap:18px; }
+    .donut-wrap svg { flex-shrink: 0; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+    .legend-item:last-child { margin-bottom: 0; }
+    .ldot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .ll { font-size:12px; color:var(--muted); flex:1; }
+    .lp { font-size:12px; font-weight:600; color:var(--text); }
+
+    /* Heatmap */
+    .heatmap-svg { display:block; width:100%; }
+
+    /* Streak mini-cal */
+    .streak-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .sday {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      background: var(--border);
+      display: flex; align-items:center; justify-content:center;
+      font-size: 9px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .sday.done  { background:var(--success); color:#fff; }
+    .sday.today { background:var(--gold); color:var(--primary); font-weight:700; }
+    .sday.none  { background:transparent; }
+    .cal-legend {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .cal-legend .ci {
+      display: flex; align-items:center; gap:4px;
+      font-size: 11px; color: var(--muted);
+    }
+    .cal-legend .ci span {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+    }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 420px) {
+      body { padding: 0; justify-content: flex-start; }
+      .phone { width:100%; height:100dvh; border-radius:0; box-shadow:none; }
+      .preview-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="preview-badge">jobible Way · Design Preview v0.1 · 390px Mobile Frame</div>
+
+<div class="phone">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24"><path d="M1 6c5.523-5.523 14.477-5.523 20 0"/><path d="M5 10c3.314-3.314 8.686-3.314 12 0"/><path d="M9 14c1.105-1.105 2.895-1.105 4 0"/><circle cx="12" cy="18" r="1" fill="#fff" stroke="none"/></svg>
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="11" rx="2"/><path d="M18 11h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2"/><rect x="4" y="9" width="8" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+
+  <!-- Screens -->
+  <div class="screens">
+
+    <!-- ①  ONBOARDING ─────────────────────────────────── -->
+    <div class="screen active" id="s-onboarding">
+      <div class="ob-logo">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="20,4 36,13 36,27 20,36 4,27 4,13" fill="white" fill-opacity="0.15"/>
+          <polygon points="20,4 36,13 36,27 20,36 4,27 4,13" stroke="white" stroke-width="1.5" fill="none"/>
+          <path d="M20 12 L20 28 M14 15.5 L20 12 L26 15.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="ob-brand">jobible <span>Way</span></div>
+      <div class="ob-tagline">말씀으로 세워지는 삶의 길</div>
+      <div class="ob-sub">32주 구약 성경 완독 여정을<br>함께 걸어가요</div>
+
+      <div class="verse-box">
+        <div class="vtext">"주의 말씀은 내 발에 등이요<br>내 길에 빛이니이다"</div>
+        <div class="vref">시편 119:105</div>
+      </div>
+
+      <button class="btn btn-gold" onclick="startJourney()">여정 시작하기 →</button>
+      <div class="ob-login">이미 계정이 있으신가요? 로그인</div>
+    </div>
+
+    <!-- ②  DASHBOARD ─────────────────────────────────── -->
+    <div class="screen" id="s-dashboard">
+      <div class="dash-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="dash-greet">안녕하세요, 요셉님 👋</div>
+            <div class="dash-title">오늘의 말씀 여정</div>
+          </div>
+          <div class="dash-bell">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-body">
+
+        <!-- Week Hero -->
+        <div class="week-hero">
+          <div class="week-eyebrow">◆ 현재 진행 중</div>
+          <div class="week-name">8주차 – 출애굽기 I</div>
+          <div class="week-range">출 1–19장 · 2026.02.24 – 03.02</div>
+          <div class="prog-row">
+            <span>전체 진도</span>
+            <span class="pct">25%</span>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" style="width:25%"></div>
+          </div>
+        </div>
+
+        <!-- Today Checks -->
+        <div class="card">
+          <div class="card-label">오늘의 체크</div>
+          <div class="check-row">
+            <div class="check-cell">
+              <div class="check-bubble done" onclick="toggleBubble(this)">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke-linecap="round"/></svg>
+              </div>
+              <div class="check-name">기도</div>
+            </div>
+            <div class="check-cell">
+              <div class="check-bubble" onclick="toggleBubble(this)">
+                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+              <div class="check-name">QT</div>
+            </div>
+            <div class="check-cell">
+              <div class="check-bubble" onclick="toggleBubble(this)">
+                <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div class="check-name">통독</div>
+            </div>
+            <div class="check-cell">
+              <div class="check-bubble" onclick="toggleBubble(this)">
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="check-name">암송</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory Verse Banner -->
+        <div class="mv-banner">
+          <div class="mv-label">✦ 이번 주 암송 성구</div>
+          <div class="mv-text">"나는 스스로 있는 자이니라…<br>이것이 영원한 나의 이름이요"</div>
+          <div class="mv-ref">출애굽기 3:14–15</div>
+        </div>
+
+        <!-- Weekly Tasks -->
+        <div class="card">
+          <div class="card-label">주간 과제</div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk on"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text done">출 1–10장 통독</div>
+            <span class="task-tag">통독</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk on"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text done">모세 소명 OIA 묵상</div>
+            <span class="task-tag">묵상</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text">출 11–19장 통독</div>
+            <span class="task-tag">통독</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text">출애굽 사건 요약 작성</div>
+            <span class="task-tag">과제</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text">암송 성구 암기 (출 3:14)</div>
+            <span class="task-tag">암송</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ③  DAILY CHECK ────────────────────────────────── -->
+    <div class="screen" id="s-check">
+      <div class="page-header">
+        <div class="h1">일일 체크</div>
+        <div class="sub">2026년 2월 28일 토요일</div>
+      </div>
+      <div class="scroll-body">
+
+        <div class="streak-card">
+          <div class="streak-num">12</div>
+          <div class="streak-info">
+            <div class="s1">연속 체크 중 🔥</div>
+            <div class="s2">오늘도 완료하면 13일!</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">오늘의 경건 생활</div>
+
+          <div class="toggle-row">
+            <div class="tog-icon" style="background:rgba(74,124,89,.1);">
+              <svg viewBox="0 0 24 24" stroke="#4A7C59"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </div>
+            <div class="tog-info">
+              <div class="tog-title">기도</div>
+              <div class="tog-desc">오늘의 기도를 드렸나요?</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="tog-icon" style="background:rgba(26,46,74,.08);">
+              <svg viewBox="0 0 24 24" stroke="#1A2E4A"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div class="tog-info">
+              <div class="tog-title">QT (큐티)</div>
+              <div class="tog-desc">말씀 묵상을 완료했나요?</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="tog-icon" style="background:rgba(201,168,76,.1);">
+              <svg viewBox="0 0 24 24" stroke="#C9A84C"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+            <div class="tog-info">
+              <div class="tog-title">성경 통독</div>
+              <div class="tog-desc">오늘 분량을 읽었나요?</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="tog-icon" style="background:rgba(201,168,76,.1);">
+              <svg viewBox="0 0 24 24" stroke="#C9A84C"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="tog-info">
+              <div class="tog-title">암송 연습</div>
+              <div class="tog-desc">이번 주 암송 성구를 연습했나요?</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">오늘의 한 줄 묵상</div>
+          <textarea rows="3" placeholder="오늘 말씀에서 받은 은혜를 적어보세요..."></textarea>
+        </div>
+
+        <button class="btn btn-navy" id="saveCheckBtn" onclick="saveCheck(this)">오늘의 체크 저장</button>
+
+      </div>
+    </div>
+
+    <!-- ④  WEEKLY LIST ────────────────────────────────── -->
+    <div class="screen" id="s-weeks">
+      <div class="page-header">
+        <div class="h1">32주 여정</div>
+        <div class="sub">구약 성경 완독 로드맵</div>
+      </div>
+      <div class="scroll-body">
+
+        <div class="prog-overview card">
+          <div class="prog-overview-top">
+            <span>전체 진도</span>
+            <strong>8 / 32주</strong>
+          </div>
+          <div class="prog-track"><div class="prog-fill" style="width:25%"></div></div>
+        </div>
+
+        <!-- Genesis -->
+        <div class="book-section">
+          <div class="book-hdr">
+            <div class="bicon">📖</div>
+            <div>
+              <div class="bname">창세기</div>
+              <div class="brange">1–7주차 · 창 1–50장</div>
+            </div>
+          </div>
+          <div class="week-row" onclick="openDetail()">
+            <div class="wnum done">1</div>
+            <div class="winfo"><div class="wt">창세기 I – 창조와 타락</div><div class="wp">창 1–11장</div></div>
+            <div class="wdots"><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div></div>
+          </div>
+          <div class="week-row" onclick="openDetail()">
+            <div class="wnum done">2</div>
+            <div class="winfo"><div class="wt">창세기 II – 아브라함</div><div class="wp">창 12–24장</div></div>
+            <div class="wdots"><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div></div>
+          </div>
+          <div class="week-row" onclick="openDetail()">
+            <div class="wnum done">3</div>
+            <div class="winfo"><div class="wt">창세기 III – 이삭과 야곱</div><div class="wp">창 25–36장</div></div>
+            <div class="wdots"><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div></div>
+          </div>
+          <div class="week-row" onclick="openDetail()">
+            <div class="wnum done">4</div>
+            <div class="winfo"><div class="wt">창세기 IV – 요셉 이야기</div><div class="wp">창 37–50장</div></div>
+            <div class="wdots"><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div><div class="dot g"></div></div>
+          </div>
+        </div>
+
+        <!-- Exodus -->
+        <div class="book-section">
+          <div class="book-hdr">
+            <div class="bicon">🔥</div>
+            <div>
+              <div class="bname">출애굽기</div>
+              <div class="brange">8–10주차 · 출 1–40장</div>
+            </div>
+          </div>
+          <div class="week-row current" onclick="openDetail()">
+            <div class="wnum current">8</div>
+            <div class="winfo"><div class="wt">출애굽기 I – 해방과 율법</div><div class="wp">출 1–19장</div></div>
+            <div class="wdots"><div class="dot gold"></div><div class="dot gold"></div><div class="dot"></div><div class="dot"></div></div>
+          </div>
+          <div class="week-row faded">
+            <div class="wnum pending">9</div>
+            <div class="winfo"><div class="wt">출애굽기 II – 십계명</div><div class="wp">출 20–40장</div></div>
+            <div class="wdots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          </div>
+        </div>
+
+        <!-- Leviticus -->
+        <div class="book-section">
+          <div class="book-hdr" style="opacity:.45;">
+            <div class="bicon">📜</div>
+            <div>
+              <div class="bname">레위기</div>
+              <div class="brange">11–13주차 · 레 1–27장</div>
+            </div>
+          </div>
+          <div class="week-row faded">
+            <div class="wnum pending">11</div>
+            <div class="winfo"><div class="wt">레위기 I – 제사법</div><div class="wp">레 1–15장</div></div>
+            <div class="wdots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          </div>
+          <div class="week-row faded">
+            <div class="wnum pending">12</div>
+            <div class="winfo"><div class="wt">레위기 II – 거룩한 삶</div><div class="wp">레 16–27장</div></div>
+            <div class="wdots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ⑤  WEEKLY DETAIL ─────────────────────────────── -->
+    <div class="screen" id="s-detail">
+      <div class="page-header">
+        <div class="back-btn" onclick="backToWeeks()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          주차 목록으로
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div style="width:26px;height:26px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--primary);">8</div>
+          <span style="font-size:12px;color:var(--gold);font-weight:600;">현재 진행 중</span>
+        </div>
+        <div class="h1">출애굽기 I</div>
+        <div class="sub">출 1–19장 · 해방과 율법의 서막</div>
+      </div>
+      <div class="scroll-body">
+
+        <div class="gold-line"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;">노트 허브</div>
+
+        <div class="note-grid">
+          <div class="note-card">
+            <div class="nc-icon" style="background:rgba(26,46,74,.08);">
+              <svg viewBox="0 0 24 24" stroke="#1A2E4A"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="nc-title">주간 요약</div>
+            <div class="nc-sub">핵심 내용 정리</div>
+          </div>
+          <div class="note-card">
+            <div class="nc-icon" style="background:rgba(201,168,76,.1);">
+              <svg viewBox="0 0 24 24" stroke="#C9A84C"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="nc-title">타임라인</div>
+            <div class="nc-sub">역사적 흐름 보기</div>
+          </div>
+          <div class="note-card">
+            <div class="nc-icon" style="background:rgba(74,124,89,.1);">
+              <svg viewBox="0 0 24 24" stroke="#4A7C59"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div class="nc-title">묵상 노트</div>
+            <div class="nc-sub">OIA 묵상 기록</div>
+          </div>
+          <div class="note-card">
+            <div class="nc-icon" style="background:rgba(160,80,80,.12);">
+              <svg viewBox="0 0 24 24" stroke="#A05050"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="nc-title">기도 제목</div>
+            <div class="nc-sub">이번 주 기도 목록</div>
+          </div>
+        </div>
+
+        <div class="mv-banner">
+          <div class="mv-label">✦ 이번 주 암송 성구</div>
+          <div class="mv-text">"나는 스스로 있는 자이니라"</div>
+          <div class="mv-ref">출애굽기 3:14</div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">주간 과제 체크</div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk on"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text done">출 1–10장 통독</div>
+            <span class="task-tag">통독</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk on"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text done">모세 소명 OIA 묵상</div>
+            <span class="task-tag">묵상</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text">출 11–19장 통독</div>
+            <span class="task-tag">통독</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text">출애굽 사건 요약 작성</div>
+            <span class="task-tag">과제</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="task-text">암송 성구 암기 (출 3:14)</div>
+            <span class="task-tag">암송</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ⑥  OIA ──────────────────────────────────────── -->
+    <div class="screen" id="s-oia">
+      <div class="page-header">
+        <div class="h1">OIA 묵상</div>
+        <div class="sub">Observation · Interpretation · Application</div>
+      </div>
+      <div class="scroll-body">
+
+        <div class="passage-chip">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          출애굽기 3:1–15
+        </div>
+
+        <div class="oia-field">
+          <div class="oia-lbl">
+            <div class="oia-badge" style="background:var(--primary);">O</div>
+            <div class="oia-lbl-text">
+              <div class="fn">관찰 (Observation)</div>
+              <div class="fd">본문에서 무엇을 봅니까?</div>
+            </div>
+          </div>
+          <textarea rows="4" placeholder="본문을 주의깊게 읽고 중요한 사실, 인물, 사건, 반복되는 단어 등을 관찰하여 기록하세요...">모세가 호렙 산에서 양을 치다가 불꽃 가운데 타는 떨기나무를 보았다. 그런데 불이 붙었는데도 나무가 타지 않는 신기한 현상이었고, 하나님이 그 안에서 모세를 부르셨다.</textarea>
+        </div>
+
+        <div class="oia-field">
+          <div class="oia-lbl">
+            <div class="oia-badge" style="background:var(--gold);">I</div>
+            <div class="oia-lbl-text">
+              <div class="fn">해석 (Interpretation)</div>
+              <div class="fd">본문이 무엇을 의미합니까?</div>
+            </div>
+          </div>
+          <textarea rows="4" placeholder="관찰한 내용이 무엇을 의미하는지 생각해보세요. 하나님의 성품, 구속의 역사, 예수님과의 연결점은?"></textarea>
+        </div>
+
+        <div class="oia-field">
+          <div class="oia-lbl">
+            <div class="oia-badge" style="background:var(--success);">A</div>
+            <div class="oia-lbl-text">
+              <div class="fn">적용 (Application)</div>
+              <div class="fd">나의 삶에 어떻게 적용합니까?</div>
+            </div>
+          </div>
+          <textarea rows="4" placeholder="오늘 발견한 진리를 나의 삶에 어떻게 적용할 수 있을까요? 구체적이고 실천 가능한 적용점을 써보세요..."></textarea>
+        </div>
+
+        <button class="btn btn-navy" id="oiaSaveBtn" style="margin-bottom:16px;" onclick="saveOIA(this)">묵상 노트 저장</button>
+
+      </div>
+    </div>
+
+    <!-- ⑦  PROGRESS ──────────────────────────────────── -->
+    <div class="screen" id="s-progress">
+      <div class="page-header">
+        <div class="h1">진도 현황</div>
+        <div class="sub">나의 말씀 여정 통계</div>
+      </div>
+      <div class="scroll-body">
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-n">8</div>
+            <div class="stat-l">완료 주차</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-n gold">12</div>
+            <div class="stat-l">연속 체크일</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-n">42</div>
+            <div class="stat-l">총 체크 횟수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-n">18</div>
+            <div class="stat-l">묵상 노트 수</div>
+          </div>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="card">
+          <div class="card-label">항목별 완료율</div>
+          <div class="donut-wrap">
+            <!--
+              r=38 → circumference = 2π×38 ≈ 238.76
+              Segment start angles use transform="rotate(deg 50 50)"
+              기도 78%  → arc=186.2  offset=52.6   start=-90
+              QT   65%  → arc=155.2  offset=83.6   start= 190.8  (-90 + 78%×360=190.8)
+              통독 12%  → arc= 28.7  offset=210.1  start= 471.2
+              나머지 45% → untouched
+            -->
+            <svg width="110" height="110" viewBox="0 0 100 100">
+              <!-- track -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#E5E0D8" stroke-width="12"/>
+              <!-- 기도 78% sage green -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#4A7C59" stroke-width="12"
+                stroke-dasharray="238.76" stroke-dashoffset="52.53"
+                stroke-linecap="butt" transform="rotate(-90 50 50)"/>
+              <!-- QT 65% navy -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#1A2E4A" stroke-width="12"
+                stroke-dasharray="238.76" stroke-dashoffset="83.57"
+                stroke-linecap="butt" transform="rotate(190.8 50 50)"/>
+              <!-- 통독 12% gold -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#C9A84C" stroke-width="12"
+                stroke-dasharray="238.76" stroke-dashoffset="210.11"
+                stroke-linecap="butt" transform="rotate(424.8 50 50)"/>
+              <!-- center -->
+              <text x="50" y="47" text-anchor="middle" font-size="15" font-weight="700" fill="#1A2E4A" font-family="Georgia,serif">25%</text>
+              <text x="50" y="60" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">전체 완료</text>
+            </svg>
+            <div style="flex:1;">
+              <div class="legend-item">
+                <div class="ldot" style="background:#4A7C59;"></div>
+                <div class="ll">기도</div><div class="lp">78%</div>
+              </div>
+              <div class="legend-item">
+                <div class="ldot" style="background:#1A2E4A;"></div>
+                <div class="ll">QT</div><div class="lp">65%</div>
+              </div>
+              <div class="legend-item">
+                <div class="ldot" style="background:#C9A84C;"></div>
+                <div class="ll">통독</div><div class="lp">12%</div>
+              </div>
+              <div class="legend-item">
+                <div class="ldot" style="background:#E5E0D8;"></div>
+                <div class="ll">암송</div><div class="lp">8%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="card">
+          <div class="card-label">활동 히트맵 – 2026년 2월</div>
+          <!--
+            Feb 2026: starts Sunday (1=Sun ... 28=Sat)
+            7 cols × 4 rows = 28 cells
+            cell w=32 gap=4  total=(32×7)+(4×6)=224+24=248 → viewBox 0 0 260 120
+          -->
+          <svg class="heatmap-svg" viewBox="0 0 260 122" xmlns="http://www.w3.org/2000/svg">
+            <!-- Day headers -->
+            <text x="16"  y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">일</text>
+            <text x="52"  y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">월</text>
+            <text x="88"  y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">화</text>
+            <text x="124" y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">수</text>
+            <text x="160" y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">목</text>
+            <text x="196" y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">금</text>
+            <text x="232" y="12" text-anchor="middle" font-size="8.5" fill="#6B7280" font-family="sans-serif">토</text>
+
+            <!-- Week 1: Feb 1–7 (row y=18) -->
+            <rect x="0"   y="18" width="32" height="26" rx="6" fill="#4A7C59" opacity=".75"/><text x="16"  y="35" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">1</text>
+            <rect x="36"  y="18" width="32" height="26" rx="6" fill="#4A7C59"/><text x="52"  y="35" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">2</text>
+            <rect x="72"  y="18" width="32" height="26" rx="6" fill="#4A7C59" opacity=".55"/><text x="88"  y="35" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">3</text>
+            <rect x="108" y="18" width="32" height="26" rx="6" fill="#4A7C59"/><text x="124" y="35" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">4</text>
+            <rect x="144" y="18" width="32" height="26" rx="6" fill="#4A7C59" opacity=".85"/><text x="160" y="35" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">5</text>
+            <rect x="180" y="18" width="32" height="26" rx="6" fill="#E5E0D8"/><text x="196" y="35" text-anchor="middle" font-size="9" fill="#6B7280" font-family="sans-serif">6</text>
+            <rect x="216" y="18" width="32" height="26" rx="6" fill="#4A7C59" opacity=".65"/><text x="232" y="35" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">7</text>
+
+            <!-- Week 2: Feb 8–14 (row y=50) -->
+            <rect x="0"   y="50" width="32" height="26" rx="6" fill="#4A7C59"/><text x="16"  y="67" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">8</text>
+            <rect x="36"  y="50" width="32" height="26" rx="6" fill="#4A7C59" opacity=".9"/><text x="52"  y="67" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">9</text>
+            <rect x="72"  y="50" width="32" height="26" rx="6" fill="#4A7C59"/><text x="88"  y="67" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">10</text>
+            <rect x="108" y="50" width="32" height="26" rx="6" fill="#E5E0D8"/><text x="124" y="67" text-anchor="middle" font-size="9" fill="#6B7280" font-family="sans-serif">11</text>
+            <rect x="144" y="50" width="32" height="26" rx="6" fill="#4A7C59" opacity=".7"/><text x="160" y="67" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">12</text>
+            <rect x="180" y="50" width="32" height="26" rx="6" fill="#4A7C59"/><text x="196" y="67" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">13</text>
+            <rect x="216" y="50" width="32" height="26" rx="6" fill="#4A7C59" opacity=".8"/><text x="232" y="67" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">14</text>
+
+            <!-- Week 3: Feb 15–21 (row y=82) -->
+            <rect x="0"   y="82" width="32" height="26" rx="6" fill="#4A7C59"/><text x="16"  y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">15</text>
+            <rect x="36"  y="82" width="32" height="26" rx="6" fill="#4A7C59"/><text x="52"  y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">16</text>
+            <rect x="72"  y="82" width="32" height="26" rx="6" fill="#4A7C59" opacity=".6"/><text x="88"  y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">17</text>
+            <rect x="108" y="82" width="32" height="26" rx="6" fill="#4A7C59"/><text x="124" y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">18</text>
+            <rect x="144" y="82" width="32" height="26" rx="6" fill="#4A7C59" opacity=".85"/><text x="160" y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">19</text>
+            <rect x="180" y="82" width="32" height="26" rx="6" fill="#4A7C59"/><text x="196" y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">20</text>
+            <rect x="216" y="82" width="32" height="26" rx="6" fill="#4A7C59"/><text x="232" y="99" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">21</text>
+
+            <!-- Week 4 label row just for legend space -->
+            <text x="0" y="118" font-size="8" fill="#6B7280" font-family="sans-serif">22–28 →</text>
+            <rect x="52"  y="108" width="32" height="8" rx="2" fill="#4A7C59"/><text x="68"  y="116" text-anchor="middle" font-size="7" fill="#fff" font-family="sans-serif">22–27</text>
+            <rect x="90"  y="108" width="32" height="8" rx="2" fill="#C9A84C"/><text x="106" y="116" text-anchor="middle" font-size="7" fill="#fff" font-family="sans-serif">28 오늘</text>
+          </svg>
+        </div>
+
+        <!-- Streak Calendar -->
+        <div class="card">
+          <div class="card-label">이번 달 스트릭 – 2월</div>
+          <!--
+            Feb 2026 starts Sunday.
+            Render 4 empty header cells (일월화수목금토) then 28 day cells
+            Total cells: 28  → 4 rows of 7
+          -->
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;">
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">일</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">월</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">화</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">수</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">목</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">금</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px;">토</div>
+          </div>
+          <div class="streak-grid" id="streakGrid"></div>
+          <div class="cal-legend">
+            <div class="ci"><span style="background:var(--success);"></span>완료</div>
+            <div class="ci"><span style="background:var(--gold);"></span>오늘</div>
+            <div class="ci"><span style="background:var(--border);"></span>미완료</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" data-screen="dashboard" onclick="navTo('dashboard',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">홈</span>
+    </div>
+    <div class="nav-item" data-screen="check" onclick="navTo('check',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="nav-label">체크</span>
+    </div>
+    <div class="nav-item" data-screen="weeks" onclick="navTo('weeks',this)">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span class="nav-label">주차</span>
+    </div>
+    <div class="nav-item" data-screen="oia" onclick="navTo('oia',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span class="nav-label">묵상</span>
+    </div>
+    <div class="nav-item" data-screen="progress" onclick="navTo('progress',this)">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="nav-label">진도</span>
+    </div>
+  </nav>
+
+</div><!-- /phone -->
+
+<script>
+  /* ── State ─────────────────────────────────────── */
+  let currentScreen = 'onboarding';
+  let prevScreen = 'weeks';   // for back navigation from detail
+
+  /* ── Onboarding → Dashboard ─────────────────── */
+  function startJourney() {
+    showScreen('dashboard');
+    document.getElementById('bottomNav').classList.add('visible');
+    setActiveNav('dashboard');
+    currentScreen = 'dashboard';
+  }
+
+  /* ── Bottom Nav ─────────────────────────────── */
+  function navTo(name, el) {
+    showScreen(name);
+    setActiveNav(name);
+    currentScreen = name;
+  }
+
+  function setActiveNav(name) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const el = document.querySelector(`.nav-item[data-screen="${name}"]`);
+    if (el) el.classList.add('active');
+  }
+
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('s-' + name);
+    if (target) {
+      target.classList.add('active');
+      target.scrollTop = 0;
+    }
+  }
+
+  /* ── Weekly Detail (drill-down from weeks) ── */
+  function openDetail() {
+    prevScreen = 'weeks';
+    showScreen('detail');
+    // detail is not a nav tab; keep weeks nav active
+  }
+
+  function backToWeeks() {
+    showScreen('weeks');
+    setActiveNav('weeks');
+    currentScreen = 'weeks';
+  }
+
+  /* ── Interactions ──────────────────────────── */
+  function toggleBubble(el) {
+    el.classList.toggle('done');
+  }
+
+  function toggleTask(row) {
+    const chk  = row.querySelector('.chk');
+    const text = row.querySelector('.task-text');
+    chk.classList.toggle('on');
+    text.classList.toggle('done');
+  }
+
+  function saveCheck(btn) {
+    btn.textContent = '✓ 저장되었습니다';
+    btn.className   = 'btn btn-green';
+    btn.disabled    = true;
+  }
+
+  function saveOIA(btn) {
+    btn.textContent = '✓ 묵상 노트 저장됨';
+    btn.className   = 'btn btn-green';
+    btn.disabled    = true;
+  }
+
+  /* ── Build Streak Calendar ──────────────────── */
+  (function buildStreak() {
+    const grid = document.getElementById('streakGrid');
+    if (!grid) return;
+
+    // Feb 2026: 28 days, starts on Sunday
+    // Completed: 1-5,7-10,12-28 (skipped 6,11)
+    const done  = new Set([1,2,3,4,5,7,8,9,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]);
+    const missed = new Set([6, 11]);
+    const today = 28;
+
+    for (let d = 1; d <= 28; d++) {
+      const div = document.createElement('div');
+      div.className = 'sday';
+      div.textContent = d;
+      if (d === today)        div.className = 'sday today';
+      else if (done.has(d))   div.className = 'sday done';
+      grid.appendChild(div);
+    }
+  })();
+</script>
+
+</body>
+</html>
