@@ -72,8 +72,10 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <AppShell title="jobible Way">
-        <div className="p-4 flex justify-center pt-20">
-          <div className="text-[var(--color-text-secondary)]">로딩 중...</div>
+        <div className="p-4 flex flex-col items-center pt-20 gap-3">
+          <div className="w-8 h-8 border-2 border-[var(--color-secondary)] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[var(--color-text-secondary)]">데이터를 불러오는 중...</p>
+          <p className="text-xs text-[var(--color-text-secondary)]/60">첫 접속 시 서버 준비에 시간이 걸릴 수 있어요</p>
         </div>
       </AppShell>
     )

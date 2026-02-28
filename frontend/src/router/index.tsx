@@ -21,8 +21,9 @@ const CurriculumPage = lazy(() => import('../pages/CurriculumPage'))
 
 function PageLoading() {
   return (
-    <div className="min-h-dvh flex items-center justify-center">
-      <div className="text-[var(--color-text-secondary)] text-sm">로딩 중...</div>
+    <div className="min-h-dvh flex flex-col items-center justify-center gap-3">
+      <div className="w-8 h-8 border-2 border-[var(--color-secondary)] border-t-transparent rounded-full animate-spin" />
+      <p className="text-sm text-[var(--color-text-secondary)]">잠시만 기다려주세요...</p>
     </div>
   )
 }
