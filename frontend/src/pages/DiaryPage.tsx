@@ -11,6 +11,7 @@ export default function DiaryPage() {
   const weekNumber = parseInt(weekId ?? '1')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingSave = useRef<string | null>(null)
 
@@ -41,6 +42,7 @@ export default function DiaryPage() {
   function handleChange(value: string) {
     setContent(value)
     pendingSave.current = value
+    setSaveStatus('idle')
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       pendingSave.current = null
@@ -49,10 +51,24 @@ export default function DiaryPage() {
   }
 
   async function autoSave(text: string) {
+    setSaveStatus('saving')
     try {
       await api.put(`/api/weeks/${weekNumber}/diary`, { content: text })
+      setSaveStatus('saved')
     } catch {
+      setSaveStatus('idle')
       showToast('저장 실패', 'error')
+    }
+  }
+
+  async function saveNow() {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    if (pendingSave.current !== null) {
+      const text = pendingSave.current
+      pendingSave.current = null
+      await autoSave(text)
+    } else {
+      await autoSave(content)
     }
   }
 
@@ -91,9 +107,17 @@ export default function DiaryPage() {
               rows={16}
               className="w-full p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/50 resize-none focus:outline-none focus:border-[var(--color-secondary)] transition-colors leading-relaxed"
             />
-            <p className="text-xs text-[var(--color-text-secondary)] text-right font-[var(--font-ui)]">
-              {content.length}자
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+                {saveStatus === 'saving' ? '저장 중...' : saveStatus === 'saved' ? '자동 저장됨' : '수정 시 자동 저장'} · {content.length}자
+              </p>
+              <button
+                onClick={saveNow}
+                className="px-4 py-2 bg-[var(--color-secondary)] text-[var(--color-bg)] rounded-lg text-xs font-[var(--font-ui)] cursor-pointer"
+              >
+                저장
+              </button>
+            </div>
           </>
         )}
       </div>

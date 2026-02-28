@@ -27,6 +27,7 @@ export default function SermonPage() {
   const [service, setService] = useState('sunday')
   const [data, setData] = useState<SermonData>({ ...EMPTY })
   const [loading, setLoading] = useState(true)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingSave = useRef<(() => Promise<void>) | null>(null)
 
@@ -74,17 +75,39 @@ export default function SermonPage() {
     const currentWeek = weekNumber
     const saveFn = async () => {
       if (!updated.date) return
+      setSaveStatus('saving')
       try {
         await api.put(`/api/weeks/${currentWeek}/sermon/${currentService}`, updated)
+        setSaveStatus('saved')
       } catch {
+        setSaveStatus('idle')
         showToast('저장 실패', 'error')
       }
     }
     pendingSave.current = saveFn
+    setSaveStatus('idle')
     saveTimer.current = setTimeout(() => {
       pendingSave.current = null
       saveFn()
     }, 1500)
+  }
+
+  async function saveNow() {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    if (pendingSave.current) {
+      const fn = pendingSave.current
+      pendingSave.current = null
+      await fn()
+    } else if (data.date) {
+      setSaveStatus('saving')
+      try {
+        await api.put(`/api/weeks/${weekNumber}/sermon/${service}`, data)
+        setSaveStatus('saved')
+      } catch {
+        setSaveStatus('idle')
+        showToast('저장 실패', 'error')
+      }
+    }
   }
 
   return (
@@ -128,6 +151,7 @@ export default function SermonPage() {
                 className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/50 resize-none focus:outline-none focus:border-[var(--color-secondary)] transition-colors"
               />
             </div>
+            <SaveBar status={saveStatus} onSave={saveNow} />
           </>
         )}
       </div>
@@ -142,6 +166,22 @@ function ShareIcon() {
       <polyline points="16 6 12 2 8 6" />
       <line x1="12" y1="2" x2="12" y2="15" />
     </svg>
+  )
+}
+
+function SaveBar({ status, onSave }: { status: 'idle' | 'saving' | 'saved'; onSave: () => void }) {
+  return (
+    <div className="flex items-center justify-between">
+      <p className="text-xs text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+        {status === 'saving' ? '저장 중...' : status === 'saved' ? '자동 저장됨' : '수정 시 자동 저장'}
+      </p>
+      <button
+        onClick={onSave}
+        className="px-4 py-2 bg-[var(--color-secondary)] text-[var(--color-bg)] rounded-lg text-xs font-[var(--font-ui)] cursor-pointer"
+      >
+        저장
+      </button>
+    </div>
   )
 }
 

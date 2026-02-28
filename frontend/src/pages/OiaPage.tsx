@@ -25,6 +25,7 @@ export default function OiaPage() {
   const [current, setCurrent] = useState<OiaNote>({ ...EMPTY })
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saving = useRef(false)
 
@@ -71,6 +72,7 @@ export default function OiaPage() {
     const updated = { ...current, [field]: value }
     setCurrent(updated)
     pendingSave.current = updated
+    setSaveStatus('idle')
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       pendingSave.current = null
@@ -81,6 +83,7 @@ export default function OiaPage() {
   async function autoSave(toSave: OiaNote) {
     if (!toSave.date || saving.current) return
     saving.current = true
+    setSaveStatus('saving')
     try {
       if (toSave.id) {
         await api.put(`/api/oia/${toSave.id}`, toSave)
@@ -89,10 +92,23 @@ export default function OiaPage() {
         setCurrent(prev => ({ ...prev, id: row.id }))
         setNotes(prev => [row, ...prev])
       }
+      setSaveStatus('saved')
     } catch {
+      setSaveStatus('idle')
       showToast('저장 실패', 'error')
     } finally {
       saving.current = false
+    }
+  }
+
+  async function saveNow() {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    if (pendingSave.current) {
+      const note = pendingSave.current
+      pendingSave.current = null
+      await autoSave(note)
+    } else {
+      await autoSave(current)
     }
   }
 
@@ -197,6 +213,17 @@ export default function OiaPage() {
               />
             </div>
           ))}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+              {saveStatus === 'saving' ? '저장 중...' : saveStatus === 'saved' ? '자동 저장됨' : '수정 시 자동 저장'}
+            </p>
+            <button
+              onClick={saveNow}
+              className="px-4 py-2 bg-[var(--color-secondary)] text-[var(--color-bg)] rounded-lg text-xs font-[var(--font-ui)] cursor-pointer"
+            >
+              저장
+            </button>
+          </div>
         </div>
       </AppShell>
     )
