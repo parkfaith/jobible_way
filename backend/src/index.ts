@@ -25,13 +25,19 @@ app.onError((err, c) => {
 // 404 handler
 app.notFound((c) => c.json({ error: 'Not found' }, 404))
 
+// 허용 오리진 목록
+const ALLOWED_ORIGINS = [
+  'https://jobible-way.vercel.app',
+  ...(process.env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()) ?? []),
+]
+
 // Middleware
 app.use('*', cors({
   origin: (origin) => {
-    if (!origin) return 'http://localhost:5173'
+    if (!origin) return ALLOWED_ORIGINS[0] ?? 'http://localhost:5173'
     if (env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) return origin
-    if (origin === 'https://jobible-way.vercel.app') return origin
-    return 'http://localhost:5173'
+    if (ALLOWED_ORIGINS.includes(origin)) return origin
+    return ALLOWED_ORIGINS[0] ?? 'http://localhost:5173'
   },
   credentials: true,
 }))
