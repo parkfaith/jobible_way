@@ -19,26 +19,26 @@ dailyRoute.get('/', requireAuth, async (c) => {
   const date = c.req.query('date') ?? localToday()
   const [row] = await db.select().from(dailyChecks)
     .where(and(eq(dailyChecks.userId, userId), eq(dailyChecks.date, date)))
-  return c.json(row ?? { userId, date, prayer30min: 0, qtDone: 0, bibleReading: 0 })
+  return c.json(row ?? { userId, date, prayer30min: 0, qtDone: 0, bibleReading: 0, verseReading: 0 })
 })
 
 // PUT /api/daily — upsert
 dailyRoute.put('/', requireAuth, async (c) => {
   const db = c.get('db')
   const userId = c.get('userId')
-  let body: { date: string; prayer30min?: number; qtDone?: number; bibleReading?: number }
+  let body: { date: string; prayer30min?: number; qtDone?: number; bibleReading?: number; verseReading?: number }
   try {
     body = await c.req.json()
   } catch {
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
-  const { date, prayer30min, qtDone, bibleReading } = body
+  const { date, prayer30min, qtDone, bibleReading, verseReading } = body
   if (!date) return c.json({ error: 'date is required' }, 400)
 
-  await db.insert(dailyChecks).values({ userId, date, prayer30min, qtDone, bibleReading })
+  await db.insert(dailyChecks).values({ userId, date, prayer30min, qtDone, bibleReading, verseReading })
     .onConflictDoUpdate({
       target: [dailyChecks.userId, dailyChecks.date],
-      set: { prayer30min, qtDone, bibleReading, updatedAt: sql`(datetime('now'))` },
+      set: { prayer30min, qtDone, bibleReading, verseReading, updatedAt: sql`(datetime('now'))` },
     })
   return c.json({ ok: true })
 })

@@ -83,6 +83,7 @@ export const dailyChecks = sqliteTable('daily_checks', {
   prayer30min: integer('prayer_30min').default(0),
   qtDone: integer('qt_done').default(0),
   bibleReading: integer('bible_reading').default(0),
+  verseReading: integer('verse_reading').default(0),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 }, (t) => [
   primaryKey({ columns: [t.userId, t.date] }),

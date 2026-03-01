@@ -30,7 +30,7 @@ progressRoute.get('/heatmap', requireAuth, async (c) => {
 
   const heatmap = rows.map(r => ({
     date: r.date,
-    count: (r.prayer30min ?? 0) + (r.qtDone ?? 0) + (r.bibleReading ?? 0),
+    count: (r.prayer30min ?? 0) + (r.qtDone ?? 0) + (r.bibleReading ?? 0) + (r.verseReading ?? 0),
   }))
 
   return c.json(heatmap)
@@ -47,7 +47,7 @@ progressRoute.get('/streak', requireAuth, async (c) => {
 
   const fullyDoneDates = new Set(
     rows
-      .filter(r => r.prayer30min && r.qtDone && r.bibleReading)
+      .filter(r => r.prayer30min && r.qtDone && r.bibleReading && r.verseReading)
       .map(r => r.date)
   )
 

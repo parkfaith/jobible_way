@@ -18,6 +18,7 @@ interface DailyData {
   prayer30min: number
   qtDone: number
   bibleReading: number
+  verseReading: number
 }
 
 export default function DashboardPage() {
@@ -25,7 +26,7 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const { showBanner, hasNativePrompt, isIos, install, dismiss } = usePwaInstall()
   const [curriculum, setCurriculum] = useState<CurriculumItem[]>([])
-  const [daily, setDaily] = useState<DailyData>({ prayer30min: 0, qtDone: 0, bibleReading: 0 })
+  const [daily, setDaily] = useState<DailyData>({ prayer30min: 0, qtDone: 0, bibleReading: 0, verseReading: 0 })
   const [currentWeek, setCurrentWeek] = useState(1)
   const [loading, setLoading] = useState(true)
 
@@ -72,6 +73,7 @@ export default function DashboardPage() {
     { key: 'prayer30min' as const, label: '기도 30분', done: !!daily.prayer30min },
     { key: 'qtDone' as const, label: 'QT', done: !!daily.qtDone },
     { key: 'bibleReading' as const, label: '성경 통독', done: !!daily.bibleReading },
+    { key: 'verseReading' as const, label: '암송 읽기', done: !!daily.verseReading },
   ]
 
   if (loading) {

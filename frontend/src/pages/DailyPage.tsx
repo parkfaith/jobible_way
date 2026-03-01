@@ -8,6 +8,7 @@ interface DailyData {
   prayer30min: number
   qtDone: number
   bibleReading: number
+  verseReading: number
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -15,7 +16,7 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 export default function DailyPage() {
   const { showToast } = useToast()
   const [date, setDate] = useState(today())
-  const [daily, setDaily] = useState<DailyData>({ prayer30min: 0, qtDone: 0, bibleReading: 0 })
+  const [daily, setDaily] = useState<DailyData>({ prayer30min: 0, qtDone: 0, bibleReading: 0, verseReading: 0 })
   const [loading, setLoading] = useState(true)
   const [weekDates, setWeekDates] = useState<string[]>([])
 
@@ -43,7 +44,7 @@ export default function DailyPage() {
       const data = await api.get(`/api/daily?date=${date}`)
       setDaily(data)
     } catch {
-      setDaily({ prayer30min: 0, qtDone: 0, bibleReading: 0 })
+      setDaily({ prayer30min: 0, qtDone: 0, bibleReading: 0, verseReading: 0 })
     } finally {
       setLoading(false)
     }
@@ -65,12 +66,13 @@ export default function DailyPage() {
 
   const dateObj = new Date(date + 'T00:00:00')
   const displayDate = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일 (${WEEKDAYS[dateObj.getDay()]})`
-  const completedCount = (daily.prayer30min ? 1 : 0) + (daily.qtDone ? 1 : 0) + (daily.bibleReading ? 1 : 0)
+  const completedCount = (daily.prayer30min ? 1 : 0) + (daily.qtDone ? 1 : 0) + (daily.bibleReading ? 1 : 0) + (daily.verseReading ? 1 : 0)
 
   const items = [
     { key: 'prayer30min' as const, label: '기도 30분', desc: '하나님과의 대화 시간', done: !!daily.prayer30min },
     { key: 'qtDone' as const, label: 'QT (경건의 시간)', desc: '말씀을 통한 묵상', done: !!daily.qtDone },
     { key: 'bibleReading' as const, label: '성경 통독', desc: '성경 읽기 진행', done: !!daily.bibleReading },
+    { key: 'verseReading' as const, label: '성구 암송 읽기', desc: '암송 구절 반복 읽기', done: !!daily.verseReading },
   ]
 
   return (
@@ -107,7 +109,7 @@ export default function DailyPage() {
             {displayDate}
           </h2>
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-            {completedCount}/3 완료
+            {completedCount}/4 완료
           </p>
         </div>
 
