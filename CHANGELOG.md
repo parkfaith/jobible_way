@@ -5,6 +5,79 @@
 
 ---
 
+## [0.8.1] — 2026-03-01
+> 성경통독 · 필독서 표시 + 설교 플레이리스트 기반 조회 + QA 수정
+
+### Added
+- **32주 성경통독 범위 표시** — 매주 읽어야 할 성경 범위를 대시보드와 주차 상세에 표시
+  - `bible-reading.ts` 상수 파일로 32주 전체 통독 데이터 관리
+  - 대시보드 현재 주차 카드에 "성경통독: {범위}" 표시 (시안 색상)
+  - 주차 상세 정보 카드에 성경통독 범위 표시
+- **32주 필독서 · 참고도서 표시** — 주차별 정해진 필독서 정보를 주차 상세에 표시
+  - `required-books.ts` 상수 파일로 32주 필독서 데이터 관리 (제목, 저자, 출판사, 비고)
+  - 주차 상세 정보 카드에 필독서 목록 표시 (골드 색상)
+
+### Changed
+- **설교 영상 조회 방식 변경** — YouTube 채널 검색 → 플레이리스트 기반 조회
+  - 주일예배/금요성령집회 각각 고정 플레이리스트 ID 사용
+  - 해당 주차의 주일/금요일 날짜와 영상 제목의 날짜를 매칭하여 정확한 영상 제공
+  - 1주차 시작일: 2026-03-01 (일요일 = 주의 첫째일)
+- **설교 영상 없을 때 "설교 시청 완료" 비활성화** — 해당 주차에 영상이 없으면 체크 토글 비활성 처리
+
+### Fixed
+- **대시보드 현재 주차 자동 계산** — 하드코딩(1주차) → 날짜 기반 자동 계산 (2026-03-01 기준)
+- **`.gitignore`에 `.wrangler/` 추가** — Cloudflare Workers 빌드 캐시 커밋 방지
+- **CLAUDE.md 환경변수 · 배포 정보 동기화** — Cloudflare Workers 마이그레이션 반영
+
+### 수정 파일
+- `frontend/src/lib/bible-reading.ts` (신규) — 32주 성경통독 상수
+- `frontend/src/lib/required-books.ts` (신규) — 32주 필독서 상수
+- `frontend/src/pages/DashboardPage.tsx` — 성경통독 표시 + currentWeek 자동 계산
+- `frontend/src/pages/WeekDetailPage.tsx` — 성경통독 + 필독서 표시
+- `frontend/src/pages/SermonPage.tsx` — 영상 없을 때 시청완료 비활성화
+- `backend/src/routes/sermon.ts` — 플레이리스트 기반 조회로 변경
+- `.gitignore` — .wrangler/ 추가
+- `CLAUDE.md` — 환경변수 · 배포 · 기술스택 동기화
+
+---
+
+## [0.8.0] — 2026-03-01
+> "설교 노트" → "설교 보기" 기능 교체 — YouTube 설교 영상 직접 시청 + 에러 화면 개선
+
+### Changed
+- **"설교 노트" → "설교 보기"로 기능 교체** — 설교 내용 작성 대신 YouTube 설교 영상 직접 시청 방식으로 변경
+  - 낙원제일교회 YouTube 채널에서 주일예배/금요성령집회 영상 자동 검색 (YouTube Data API v3)
+  - 영상 제목 파싱으로 설교 제목, 본문 구절, 설교자, 날짜 자동 추출
+  - 썸네일 클릭 시 인라인 YouTube 임베드 재생
+  - 주일/금요 탭 전환
+- **대시보드 · 주차 상세 메뉴 라벨 변경** — "설교 노트" → "설교 보기", 아이콘을 비디오 카메라로 교체
+- **주간 체크에 "설교 시청 완료" 항목 추가** — `weekly_tasks` 테이블에 `sermon_watched` 컬럼 추가
+
+### Fixed
+- **배포 후 에러 화면 개선** — React Router 기본 "Hey developer" 에러 화면 대신 사용자 친화적 에러 UI 표시
+  - `RouteErrorBoundary` 컴포넌트 추가 — 청크 로드 실패 시 자동 새로고침
+  - `sessionStorage` 기반 무한 새로고침 방지 (10초 쿨다운)
+  - 모든 라우트에 `errorElement` 적용
+
+### Removed
+- **설교 AI 요약 기능 전체 삭제** — YouTube 자막 추출 불안정으로 제거
+  - `sermon-cron.ts`, `summarize.ts`, `transcript.ts`, `youtube.ts` (lib), `sermon-summary.ts` 삭제
+  - `sermon_summaries` DB 테이블, Cron 트리거, OPENAI_API_KEY 설정 제거
+
+### 수정 파일
+- `backend/src/routes/sermon.ts` — YouTube Data API 프록시 + 제목 파싱으로 전면 재작성
+- `backend/src/routes/weekly.ts` — sermonWatched 필드 추가
+- `backend/src/db/schema.ts` — weeklyTasks에 sermonWatched 컬럼 추가, sermonSummaries 테이블 제거
+- `backend/src/index.ts` — scheduled 핸들러 · sermon-summary 라우트 제거
+- `backend/src/env.ts` — OPENAI_API_KEY 제거
+- `backend/wrangler.toml` — crons 트리거 제거
+- `frontend/src/pages/SermonPage.tsx` — YouTube 영상 시청 UI로 전면 재작성
+- `frontend/src/pages/WeekDetailPage.tsx` — 설교 보기 라벨 + 시청 완료 체크 추가
+- `frontend/src/pages/DashboardPage.tsx` — 설교 보기 라벨 변경
+- `frontend/src/router/index.tsx` — RouteErrorBoundary 추가
+
+---
+
 ## [0.7.2] — 2026-03-01
 > 배포 후 캐시 불일치로 인한 화면 에러 방지
 

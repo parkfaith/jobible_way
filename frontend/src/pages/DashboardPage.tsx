@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import { today } from '../lib/date'
 import { usePwaInstall } from '../lib/usePwaInstall'
+import { BIBLE_READING } from '../lib/bible-reading'
 
 interface CurriculumItem {
   weekNumber: number
@@ -40,7 +41,11 @@ export default function DashboardPage() {
       ])
       setCurriculum(currData)
       setDaily(dailyData)
-      setCurrentWeek(1)
+      // 1주차 시작일(2026-03-01) 기준 현재 주차 자동 계산
+      const week1 = new Date('2026-03-01T00:00:00+09:00')
+      const now = new Date()
+      const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
+      setCurrentWeek(Math.max(1, Math.min(32, diff + 1)))
     } catch {
       // API 미연결 시 기본값 유지
     } finally {
@@ -101,6 +106,16 @@ export default function DashboardPage() {
           {currentCurr && (
             <p className="text-xs text-[var(--color-secondary)] mt-1">{currentCurr.scripture}</p>
           )}
+          {BIBLE_READING[currentWeek] && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <svg className="w-3.5 h-3.5 text-[var(--color-accent)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+              </svg>
+              <span className="text-xs text-[var(--color-accent)] font-[var(--font-ui)]">
+                성경통독: {BIBLE_READING[currentWeek]}
+              </span>
+            </div>
+          )}
           <div className="mt-4 h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
             <div
               className="h-full bg-[var(--color-secondary)] rounded-full transition-all duration-500"
@@ -147,7 +162,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           {[
             {
-              label: '설교 노트', path: `/weeks/${currentWeek}/sermon`,
+              label: '설교 보기', path: `/weeks/${currentWeek}/sermon`,
               icon: (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />

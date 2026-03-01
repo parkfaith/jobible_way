@@ -11,9 +11,8 @@
 ### 백엔드 (`cd backend`)
 | 명령어 | 설명 |
 |--------|------|
-| `npm run dev` | tsx watch 개발 서버 시작 (포트 3000) |
-| `npm run build` | TypeScript → `dist/` 컴파일 |
-| `npm start` | 컴파일된 서버 실행 |
+| `npx wrangler dev` | Cloudflare Workers 로컬 개발 서버 (포트 3000) |
+| `npx wrangler deploy` | Cloudflare Workers 프로덕션 배포 |
 | `npm run generate` | 스키마 변경 후 Drizzle 마이그레이션 생성 |
 | `npm run migrate` | 대기 중인 마이그레이션 Turso DB에 적용 |
 | `npm run seed` | 32주 커리큘럼 시드 데이터 삽입 |
@@ -28,17 +27,16 @@
 
 ### 빠른 검증
 ```bash
-# 양쪽 프로젝트 타입 체크 (출력 없이)
-cd backend && npx tsc --noEmit
+# 프론트엔드 타입 체크 + 빌드
 cd frontend && npx tsc --noEmit && npx vite build
 ```
 
 ## 아키텍처
 
 ### 기술 스택
-- **백엔드**: Hono + Drizzle ORM + Turso (SQLite/LibSQL) + Firebase Admin SDK
+- **백엔드**: Hono + Drizzle ORM + Turso (SQLite/LibSQL) + Cloudflare Workers
 - **프론트엔드**: React 19 + Vite 7 + Tailwind CSS 4 + React Router 7 + Firebase Auth + PWA (vite-plugin-pwa)
-- **인증(Auth)**: Firebase Google OAuth → `Authorization: Bearer` 헤더에 ID 토큰 → 백엔드에서 Firebase Admin으로 검증
+- **인증(Auth)**: Firebase Google OAuth → `Authorization: Bearer` 헤더에 ID 토큰 → 백엔드에서 jose 라이브러리로 JWT 공개키 검증
 - **폰트**: Pretendard Variable (CDN 동적 서브셋)
 
 ### 백엔드 구조
@@ -46,6 +44,7 @@ cd frontend && npx tsc --noEmit && npx vite build
 
 주요 라우트 패턴:
 - `/api/weeks/:weekNumber/{sermon|oia|diary}` — 주차별 콘텐츠
+- `/api/weeks/:weekNumber/sermons` — YouTube 플레이리스트에서 해당 주차 설교 영상 조회
 - `/api/oia/:id` — OIA 항목 수정/삭제용 별도 라우터 인스턴스 (userId로 소유권 확인)
 - `/api/daily`, `/api/weekly/:weekNumber` — `onConflictDoUpdate` 기반 upsert
 - `/api/progress/{heatmap|streak|volumes}` — 읽기 전용 집계 쿼리
@@ -77,11 +76,12 @@ cd frontend && npx tsc --noEmit && npx vite build
 
 ## 환경 변수
 
-### 백엔드 (`backend/.env`)
+### 백엔드 (Cloudflare Workers — `wrangler secret` 또는 `backend/.dev.vars`)
 ```
 TURSO_DATABASE_URL, TURSO_AUTH_TOKEN
-FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
-PORT (기본값 3000), NODE_ENV
+FIREBASE_PROJECT_ID
+YOUTUBE_API_KEY
+ALLOWED_ORIGINS (선택), NODE_ENV (선택)
 ```
 
 ### 프론트엔드 (`frontend/.env.local`)
@@ -103,8 +103,8 @@ VITE_API_URL (기본값 http://localhost:3000)
 ## 배포
 
 - **프론트엔드**: Vercel (SPA 리라이트: `frontend/vercel.json`, 보안 헤더 설정 포함)
-- **백엔드**: Render/Railway (Node.js)
-- **CORS**: 개발 환경에서 `localhost:*` 허용, 프로덕션에서 `https://jobible-way.vercel.app` 허용
+- **백엔드**: Cloudflare Workers (`wrangler deploy`, `backend/wrangler.toml` 설정)
+- **CORS**: `localhost:*` 항상 허용, 프로덕션에서 `https://jobible-way.vercel.app` 허용
 
 ## 작업 규칙
 

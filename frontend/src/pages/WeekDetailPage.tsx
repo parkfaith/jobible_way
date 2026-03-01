@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
 import { api } from '../lib/api'
+import { BIBLE_READING } from '../lib/bible-reading'
+import { REQUIRED_BOOKS } from '../lib/required-books'
 
 interface CurriculumItem {
   weekNumber: number
@@ -18,6 +20,7 @@ interface WeeklyData {
   verseMemorized: number
   bookReportDone: number
   previewDone: number
+  sermonWatched: number
 }
 
 export default function WeekDetailPage() {
@@ -25,7 +28,7 @@ export default function WeekDetailPage() {
   const navigate = useNavigate()
   const weekNumber = parseInt(weekId ?? '1')
   const [curr, setCurr] = useState<CurriculumItem | null>(null)
-  const [weekly, setWeekly] = useState<WeeklyData>({ verseMemorized: 0, bookReportDone: 0, previewDone: 0 })
+  const [weekly, setWeekly] = useState<WeeklyData>({ verseMemorized: 0, bookReportDone: 0, previewDone: 0, sermonWatched: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -60,10 +63,10 @@ export default function WeekDetailPage() {
 
   const noteMenus = [
     {
-      label: '설교 노트', desc: '주일/금요 설교 기록', path: `/weeks/${weekNumber}/sermon`,
+      label: '설교 보기', desc: '주일/금요 설교 영상', path: `/weeks/${weekNumber}/sermon`,
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+          <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
         </svg>
       ),
     },
@@ -94,6 +97,7 @@ export default function WeekDetailPage() {
   ]
 
   const checkItems = [
+    { key: 'sermonWatched' as const, label: '설교 시청 완료', done: !!weekly.sermonWatched },
     { key: 'verseMemorized' as const, label: '성구 암송 완료', done: !!weekly.verseMemorized },
     { key: 'previewDone' as const, label: '예습 완료', done: !!weekly.previewDone },
     ...(curr?.requiredBook ? [{ key: 'bookReportDone' as const, label: '독서보고서 완료', done: !!weekly.bookReportDone }] : []),
@@ -114,6 +118,30 @@ export default function WeekDetailPage() {
             <p className="text-sm text-[var(--color-text-secondary)] mt-2">{curr.scripture}</p>
             {curr.theme && (
               <p className="text-xs text-[var(--color-text-secondary)] mt-1">주제: {curr.theme}</p>
+            )}
+            {(BIBLE_READING[weekNumber] || REQUIRED_BOOKS[weekNumber]) && (
+              <div className="mt-3 pt-3 border-t border-[var(--color-border)] space-y-2">
+                {BIBLE_READING[weekNumber] && (
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-[var(--color-accent)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+                    </svg>
+                    <span className="text-xs text-[var(--color-accent)] font-[var(--font-ui)]">
+                      성경통독: {BIBLE_READING[weekNumber]}
+                    </span>
+                  </div>
+                )}
+                {REQUIRED_BOOKS[weekNumber]?.map((book, i) => (
+                  <div key={i} className="flex items-start gap-1.5">
+                    <svg className="w-4 h-4 text-[var(--color-secondary)] flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                    </svg>
+                    <span className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)]">
+                      필독서: {book.title}{book.note ? ` (${book.note})` : ''}{book.author ? ` — ${book.author}` : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}

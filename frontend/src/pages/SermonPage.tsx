@@ -1,16 +1,22 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
 import TabNav from '../components/ui/TabNav'
 import { api } from '../lib/api'
 import { useToast } from '../components/ui/Toast'
-import { shareOrCopy } from '../lib/share'
 
-interface SermonData {
+interface SermonVideo {
+  videoId: string
+  title: string
   date: string
   preacher: string
   scripture: string
-  content: string
+  service: string
+  thumbnail: string
+}
+
+interface WeeklyData {
+  sermonWatched: number
 }
 
 const SERVICES = [
@@ -18,186 +24,161 @@ const SERVICES = [
   { label: '금요 예배', value: 'friday' },
 ]
 
-const EMPTY: SermonData = { date: '', preacher: '', scripture: '', content: '' }
-
 export default function SermonPage() {
   const { weekId } = useParams()
   const { showToast } = useToast()
   const weekNumber = parseInt(weekId ?? '1')
   const [service, setService] = useState('sunday')
-  const [data, setData] = useState<SermonData>({ ...EMPTY })
+  const [sermons, setSermons] = useState<SermonVideo[]>([])
+  const [weekly, setWeekly] = useState<WeeklyData>({ sermonWatched: 0 })
   const [loading, setLoading] = useState(true)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const pendingSave = useRef<(() => Promise<void>) | null>(null)
+  const [playing, setPlaying] = useState<string | null>(null)
 
   useEffect(() => {
-    // 탭 변경 시 대기 중인 저장 즉시 실행
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    if (pendingSave.current) {
-      pendingSave.current()
-      pendingSave.current = null
-    }
-    loadSermon()
+    loadData()
   }, [service, weekNumber])
 
-  // 컴포넌트 언마운트 시 대기 중인 저장 즉시 실행
-  useEffect(() => {
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current)
-      if (pendingSave.current) pendingSave.current()
-    }
-  }, [])
-
-  async function loadSermon() {
+  async function loadData() {
     setLoading(true)
+    setPlaying(null)
     try {
-      const res = await api.get(`/api/weeks/${weekNumber}/sermon/${service}`)
-      setData({
-        date: res.date ?? '',
-        preacher: res.preacher ?? '',
-        scripture: res.scripture ?? '',
-        content: res.content ?? '',
-      })
+      const [sermonsData, weeklyData] = await Promise.all([
+        api.get(`/api/weeks/${weekNumber}/sermon/${service}`),
+        api.get(`/api/weekly/${weekNumber}`),
+      ])
+      setSermons(sermonsData)
+      setWeekly({ sermonWatched: weeklyData.sermonWatched ?? 0 })
     } catch {
-      setData({ ...EMPTY })
+      setSermons([])
     } finally {
       setLoading(false)
     }
   }
 
-  function handleChange(field: keyof SermonData, value: string) {
-    const updated = { ...data, [field]: value }
-    setData(updated)
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    // service와 weekNumber를 클로저가 아닌 현재 값으로 캡처
-    const currentService = service
-    const currentWeek = weekNumber
-    const saveFn = async () => {
-      if (!updated.date) return
-      setSaveStatus('saving')
-      try {
-        await api.put(`/api/weeks/${currentWeek}/sermon/${currentService}`, updated)
-        setSaveStatus('saved')
-      } catch {
-        setSaveStatus('idle')
-        showToast('저장 실패', 'error')
-      }
-    }
-    pendingSave.current = saveFn
-    setSaveStatus('idle')
-    saveTimer.current = setTimeout(() => {
-      pendingSave.current = null
-      saveFn()
-    }, 1500)
-  }
-
-  async function saveNow() {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    if (pendingSave.current) {
-      const fn = pendingSave.current
-      pendingSave.current = null
-      await fn()
-    } else if (data.date) {
-      setSaveStatus('saving')
-      try {
-        await api.put(`/api/weeks/${weekNumber}/sermon/${service}`, data)
-        setSaveStatus('saved')
-      } catch {
-        setSaveStatus('idle')
-        showToast('저장 실패', 'error')
-      }
+  async function toggleWatched() {
+    const prev = weekly.sermonWatched
+    const next = prev ? 0 : 1
+    setWeekly({ sermonWatched: next })
+    try {
+      await api.put(`/api/weekly/${weekNumber}`, { sermonWatched: next })
+    } catch {
+      setWeekly({ sermonWatched: prev })
+      showToast('저장 실패', 'error')
     }
   }
 
   return (
-    <AppShell
-      title={`${weekNumber}주차 설교 노트`}
-      showBack
-      rightAction={
-        <button
-          onClick={() => {
-            const lines = [`[설교 노트] ${weekNumber}주차`]
-            if (data.date) lines.push(`날짜: ${data.date}`)
-            if (data.preacher) lines.push(`설교자: ${data.preacher}`)
-            if (data.scripture) lines.push(`본문: ${data.scripture}`)
-            if (data.content) lines.push('', data.content)
-            shareOrCopy(lines.join('\n'), showToast)
-          }}
-          className="p-2.5 text-[var(--color-secondary)] cursor-pointer"
-        >
-          <ShareIcon />
-        </button>
-      }
-    >
+    <AppShell title={`${weekNumber}주차 설교보기`} showBack>
       <TabNav tabs={SERVICES} activeTab={service} onChange={setService} />
       <div className="p-4 space-y-4">
+        {/* 시청 완료 버튼 — 영상이 없으면 비활성화 */}
+        {(() => {
+          const disabled = loading || sermons.length === 0
+          return (
+            <button
+              onClick={toggleWatched}
+              disabled={disabled}
+              className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                disabled
+                  ? 'opacity-40 cursor-not-allowed bg-[var(--color-surface)] border-[var(--color-border)]'
+                  : weekly.sermonWatched
+                    ? 'bg-[var(--color-success)]/5 border-[var(--color-success)]/30 cursor-pointer'
+                    : 'bg-[var(--color-surface)] border-[var(--color-border)] cursor-pointer'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                weekly.sermonWatched && !disabled
+                  ? 'bg-[var(--color-success)] text-white'
+                  : 'border-2 border-[var(--color-border)]'
+              }`}>
+                {!!weekly.sermonWatched && !disabled && (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              <span className={`text-sm font-[var(--font-ui)] ${
+                disabled
+                  ? 'text-[var(--color-text-secondary)]'
+                  : weekly.sermonWatched
+                    ? 'text-[var(--color-success)]'
+                    : 'text-[var(--color-text-primary)]'
+              }`}>
+                설교 시청 완료
+              </span>
+            </button>
+          )
+        })()}
+
         {loading ? (
-          <div className="text-center text-sm text-[var(--color-text-secondary)] py-8">로딩 중...</div>
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <div className="w-8 h-8 border-2 border-[var(--color-secondary)] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-[var(--color-text-secondary)]">설교 영상을 불러오는 중...</p>
+          </div>
+        ) : sermons.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-sm text-[var(--color-text-secondary)]">해당 주차의 설교 영상을 찾을 수 없습니다.</p>
+          </div>
         ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <InputField label="날짜" value={data.date} onChange={(v) => handleChange('date', v)} placeholder="2026-03-01" />
-              <InputField label="설교자" value={data.preacher} onChange={(v) => handleChange('preacher', v)} placeholder="목사님 성함" />
-            </div>
-            <InputField label="본문" value={data.scripture} onChange={(v) => handleChange('scripture', v)} placeholder="요한복음 3:16" />
-            <div>
-              <label className="text-xs font-medium text-[var(--color-text-secondary)] font-[var(--font-ui)] mb-1 block">설교 내용</label>
-              <textarea
-                value={data.content}
-                onChange={(e) => handleChange('content', e.target.value)}
-                placeholder="설교 내용을 기록하세요..."
-                rows={12}
-                className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/50 resize-none focus:outline-none focus:border-[var(--color-secondary)] transition-colors"
-              />
-            </div>
-            <SaveBar status={saveStatus} onSave={saveNow} />
-          </>
+          <div className="space-y-4">
+            {sermons.map((sermon) => (
+              <div key={sermon.videoId} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
+                {/* 설교 정보 헤더 */}
+                <div className="p-4 space-y-2">
+                  <h3 className="text-base font-semibold text-[var(--color-primary)] font-[var(--font-heading)] leading-snug">
+                    {sermon.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {sermon.scripture && (
+                      <span className="inline-flex items-center gap-1 text-xs text-[var(--color-secondary)] font-[var(--font-ui)]">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+                        </svg>
+                        {sermon.scripture}
+                      </span>
+                    )}
+                    {sermon.preacher && (
+                      <span className="text-xs text-[var(--color-text-secondary)]">{sermon.preacher}</span>
+                    )}
+                    <span className="text-xs text-[var(--color-text-secondary)]">{sermon.date}</span>
+                  </div>
+                </div>
+
+                {/* YouTube 영상 / 썸네일 */}
+                {playing === sermon.videoId ? (
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      className="absolute inset-0 w-full h-full"
+                      src={`https://www.youtube.com/embed/${sermon.videoId}?autoplay=1&rel=0`}
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setPlaying(sermon.videoId)}
+                    className="relative w-full cursor-pointer group"
+                  >
+                    <img
+                      src={sermon.thumbnail}
+                      alt={sermon.title}
+                      className="w-full aspect-video object-cover"
+                    />
+                    {/* 재생 버튼 오버레이 */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                      <div className="w-16 h-16 rounded-full bg-[var(--color-secondary)] flex items-center justify-center shadow-lg">
+                        <svg className="w-7 h-7 text-[var(--color-bg)] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </AppShell>
-  )
-}
-
-function ShareIcon() {
-  return (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-      <polyline points="16 6 12 2 8 6" />
-      <line x1="12" y1="2" x2="12" y2="15" />
-    </svg>
-  )
-}
-
-function SaveBar({ status, onSave }: { status: 'idle' | 'saving' | 'saved'; onSave: () => void }) {
-  return (
-    <div className="flex items-center justify-between">
-      <p className="text-xs text-[var(--color-text-secondary)] font-[var(--font-ui)]">
-        {status === 'saving' ? '저장 중...' : status === 'saved' ? '자동 저장됨' : '수정 시 자동 저장'}
-      </p>
-      <button
-        onClick={onSave}
-        className="px-4 py-2 bg-[var(--color-secondary)] text-[var(--color-bg)] rounded-lg text-xs font-[var(--font-ui)] cursor-pointer"
-      >
-        저장
-      </button>
-    </div>
-  )
-}
-
-function InputField({ label, value, onChange, placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string
-}) {
-  return (
-    <div>
-      <label className="text-xs font-medium text-[var(--color-text-secondary)] font-[var(--font-ui)] mb-1 block">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/50 focus:outline-none focus:border-[var(--color-secondary)] transition-colors"
-      />
-    </div>
   )
 }

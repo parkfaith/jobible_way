@@ -38,7 +38,7 @@ app.use('*', cors({
       ...(c.env.ALLOWED_ORIGINS?.split(',').map((s: string) => s.trim()) ?? []),
     ]
     if (!origin) return allowedOrigins[0] ?? 'http://localhost:5173'
-    if (c.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) return origin
+    if (origin.startsWith('http://localhost:')) return origin
     if (allowedOrigins.includes(origin)) return origin
     return allowedOrigins[0] ?? 'http://localhost:5173'
   },

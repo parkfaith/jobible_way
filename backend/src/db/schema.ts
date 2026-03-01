@@ -71,6 +71,7 @@ export const weeklyTasks = sqliteTable('weekly_tasks', {
   verseMemorized: integer('verse_memorized').default(0),
   bookReportDone: integer('book_report_done').default(0),
   previewDone: integer('preview_done').default(0),
+  sermonWatched: integer('sermon_watched').default(0),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 }, (t) => [
   primaryKey({ columns: [t.userId, t.weekNumber] }),
