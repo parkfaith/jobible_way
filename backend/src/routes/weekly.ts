@@ -6,6 +6,15 @@ import type { AppEnv } from '../types'
 
 export const weeklyRoute = new Hono<AppEnv>()
 
+// GET /api/weekly — 전체 주차 주간체크 현황
+weeklyRoute.get('/', requireAuth, async (c) => {
+  const db = c.get('db')
+  const userId = c.get('userId')
+  const rows = await db.select().from(weeklyTasks)
+    .where(eq(weeklyTasks.userId, userId))
+  return c.json(rows)
+})
+
 // GET /api/weekly/:weekNumber
 weeklyRoute.get('/:weekNumber', requireAuth, async (c) => {
   const db = c.get('db')

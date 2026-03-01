@@ -11,21 +11,49 @@ interface CurriculumItem {
   scripture: string
 }
 
+interface WeeklyTask {
+  weekNumber: number
+  sermonWatched: number
+  verseMemorized: number
+  previewDone: number
+  bookReportDone: number
+}
+
 const VOLUME_LABELS = ['제1권 · 새생명', '제2권 · 성장', '제3권 · 재생산']
 const VOLUME_COLORS = ['var(--color-success)', 'var(--color-secondary)', 'var(--color-primary)']
 
 export default function WeeksPage() {
   const navigate = useNavigate()
   const [curriculum, setCurriculum] = useState<CurriculumItem[]>([])
+  const [weeklyMap, setWeeklyMap] = useState<Record<number, WeeklyTask>>({})
   const [loading, setLoading] = useState(true)
-  const currentWeek = 1
+
+  // 현재 주차 자동 계산
+  const week1 = new Date('2026-03-01T00:00:00+09:00')
+  const now = new Date()
+  const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
+  const currentWeek = Math.max(1, Math.min(32, diff + 1))
 
   useEffect(() => {
-    api.get('/api/curriculum')
-      .then(setCurriculum)
+    Promise.all([
+      api.get('/api/curriculum'),
+      api.get('/api/weekly'),
+    ])
+      .then(([currData, weeklyData]) => {
+        setCurriculum(currData)
+        const map: Record<number, WeeklyTask> = {}
+        for (const w of weeklyData) map[w.weekNumber] = w
+        setWeeklyMap(map)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  function getWeeklyDoneCount(weekNumber: number): number {
+    const w = weeklyMap[weekNumber]
+    if (!w) return 0
+    return (w.sermonWatched ? 1 : 0) + (w.verseMemorized ? 1 : 0) + (w.previewDone ? 1 : 0) + (w.bookReportDone ? 1 : 0)
+  }
 
   if (loading) {
     return (
@@ -70,6 +98,8 @@ export default function WeeksPage() {
                 const isCurrent = item.weekNumber === currentWeek
                 const isPast = item.weekNumber < currentWeek
                 const isFuture = item.weekNumber > currentWeek
+                const doneCount = getWeeklyDoneCount(item.weekNumber)
+                const isAllDone = doneCount === 4
 
                 return (
                   <button
@@ -84,13 +114,15 @@ export default function WeeksPage() {
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      isCurrent
-                        ? 'bg-[var(--color-secondary)] text-[var(--color-bg)]'
-                        : isPast
-                          ? 'bg-[var(--color-success)] text-white'
-                          : 'bg-[var(--color-border)] text-[var(--color-text-secondary)]'
+                      isAllDone
+                        ? 'bg-[var(--color-success)] text-white'
+                        : isCurrent
+                          ? 'bg-[var(--color-secondary)] text-[var(--color-bg)]'
+                          : isPast
+                            ? 'bg-[var(--color-border)] text-[var(--color-text-secondary)]'
+                            : 'bg-[var(--color-border)] text-[var(--color-text-secondary)]'
                     }`}>
-                      {isPast ? (
+                      {isAllDone ? (
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
@@ -106,11 +138,18 @@ export default function WeeksPage() {
                       </p>
                       <p className="text-xs text-[var(--color-text-secondary)] truncate mt-0.5">{item.scripture}</p>
                     </div>
-                    {!isFuture && (
-                      <svg className="w-4 h-4 text-[var(--color-text-secondary)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    )}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {!isFuture && doneCount > 0 && !isAllDone && (
+                        <span className="text-[10px] text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+                          {doneCount}/4
+                        </span>
+                      )}
+                      {!isFuture && (
+                        <svg className="w-4 h-4 text-[var(--color-text-secondary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      )}
+                    </div>
                   </button>
                 )
               })}

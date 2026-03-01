@@ -21,12 +21,20 @@ interface DailyData {
   verseReading: number
 }
 
+interface WeeklyData {
+  sermonWatched: number
+  verseMemorized: number
+  previewDone: number
+  bookReportDone: number
+}
+
 export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { showBanner, hasNativePrompt, isIos, install, dismiss } = usePwaInstall()
   const [curriculum, setCurriculum] = useState<CurriculumItem[]>([])
   const [daily, setDaily] = useState<DailyData>({ prayer30min: 0, qtDone: 0, bibleReading: 0, verseReading: 0 })
+  const [weekly, setWeekly] = useState<WeeklyData>({ sermonWatched: 0, verseMemorized: 0, previewDone: 0, bookReportDone: 0 })
   const [currentWeek, setCurrentWeek] = useState(1)
   const [loading, setLoading] = useState(true)
 
@@ -36,17 +44,21 @@ export default function DashboardPage() {
 
   async function loadData() {
     try {
-      const [currData, dailyData] = await Promise.all([
-        api.get('/api/curriculum'),
-        api.get(`/api/daily?date=${today()}`),
-      ])
-      setCurriculum(currData)
-      setDaily(dailyData)
       // 1주차 시작일(2026-03-01) 기준 현재 주차 자동 계산
       const week1 = new Date('2026-03-01T00:00:00+09:00')
       const now = new Date()
       const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
-      setCurrentWeek(Math.max(1, Math.min(32, diff + 1)))
+      const week = Math.max(1, Math.min(32, diff + 1))
+      setCurrentWeek(week)
+
+      const [currData, dailyData, weeklyData] = await Promise.all([
+        api.get('/api/curriculum'),
+        api.get(`/api/daily?date=${today()}`),
+        api.get(`/api/weekly/${week}`),
+      ])
+      setCurriculum(currData)
+      setDaily(dailyData)
+      setWeekly(weeklyData)
     } catch {
       // API 미연결 시 기본값 유지
     } finally {
@@ -130,32 +142,88 @@ export default function DashboardPage() {
         </button>
 
         {/* 오늘의 일일 체크 */}
+        {(() => {
+          const dailyDoneCount = dailyItems.filter(i => i.done).length
+          const allDone = dailyDoneCount === dailyItems.length
+          return (
+            <div className={`bg-[var(--color-surface)] border rounded-xl p-5 ${
+              allDone
+                ? 'border-[var(--color-success)]/40'
+                : 'border-[var(--color-border)]'
+            }`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-[var(--color-primary)]">오늘의 일일 체크</h3>
+                <span className={`text-xs font-[var(--font-ui)] ${
+                  allDone ? 'text-[var(--color-success)]' : 'text-[var(--color-secondary)]'
+                }`}>
+                  {allDone ? '오늘 완료!' : `${dailyDoneCount}/${dailyItems.length} 완료`}
+                </span>
+              </div>
+              <div className="flex gap-4 justify-center">
+                {dailyItems.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => toggleDaily(item.key)}
+                    className="flex flex-col items-center gap-2 cursor-pointer"
+                  >
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      item.done
+                        ? 'bg-[var(--color-success)] text-white'
+                        : 'border-2 border-[var(--color-secondary)]/50 text-[var(--color-secondary)]'
+                    }`}>
+                      {item.done ? (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className={`text-[11px] font-[var(--font-ui)] ${
+                      item.done ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-secondary)] font-medium'
+                    }`}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* 이번 주 주간 체크 현황 */}
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
-          <h3 className="text-sm font-medium text-[var(--color-primary)] mb-4">오늘의 일일 체크</h3>
-          <div className="flex gap-4 justify-center">
-            {dailyItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => toggleDaily(item.key)}
-                className="flex flex-col items-center gap-2 cursor-pointer"
-              >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-[var(--color-primary)]">{currentWeek}주차 주간 체크</h3>
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              {(weekly.sermonWatched ? 1 : 0) + (weekly.verseMemorized ? 1 : 0) + (weekly.previewDone ? 1 : 0) + (weekly.bookReportDone ? 1 : 0)}/4 완료
+            </span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { label: '설교 시청', done: !!weekly.sermonWatched },
+              { label: '성구 암송', done: !!weekly.verseMemorized },
+              { label: '예습 완료', done: !!weekly.previewDone },
+              { label: '독서보고서', done: !!weekly.bookReportDone },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-2.5">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                   item.done
                     ? 'bg-[var(--color-success)] text-white'
-                    : 'border-2 border-[var(--color-border)] text-[var(--color-text-secondary)]'
+                    : 'border-2 border-[var(--color-border)]'
                 }`}>
-                  {item.done ? (
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  {item.done && (
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
                     </svg>
                   )}
                 </div>
-                <span className="text-[11px] text-[var(--color-text-secondary)] font-[var(--font-ui)]">{item.label}</span>
-              </button>
+                <span className={`text-sm font-[var(--font-ui)] ${
+                  item.done ? 'text-[var(--color-success)]' : 'text-[var(--color-text-secondary)]'
+                }`}>
+                  {item.label}
+                </span>
+              </div>
             ))}
           </div>
         </div>
