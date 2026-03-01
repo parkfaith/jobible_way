@@ -8,8 +8,10 @@ const PLAYLISTS = {
   friday: 'PLQttQhLeyIgkoH-l-0qjRUNQ3GI2k9qhC',   // 금요성령집회
 } as const
 
-// 제자훈련 1주차 시작일 (일요일)
-const WEEK1_START = new Date('2026-03-01T00:00:00+09:00')
+// 제자훈련 1주차 시작일 (일요일) — UTC 기반 문자열 연산으로 시간대 무관하게 처리
+const WEEK1_YEAR = 2026
+const WEEK1_MONTH = 3
+const WEEK1_DAY = 1
 
 export const sermonRoute = new Hono<AppEnv>()
 
@@ -90,19 +92,21 @@ sermonRoute.get('/:service', requireAuth, async (c) => {
  * 주차 번호로 해당 주의 주일(일요일)과 금요일 날짜를 계산한다.
  * 1주차 시작: 2026-03-01 (일요일)
  * 각 주차: 일요일 ~ 토요일
+ * UTC Date 사용 — 시간대에 무관하게 정확한 날짜 계산
  */
 function getWeekDates(weekNumber: number) {
-  const start = new Date(WEEK1_START)
-  start.setDate(start.getDate() + (weekNumber - 1) * 7)
+  // UTC 기준으로 날짜를 생성하여 시간대 영향 제거
+  const start = new Date(Date.UTC(WEEK1_YEAR, WEEK1_MONTH - 1, WEEK1_DAY))
+  start.setUTCDate(start.getUTCDate() + (weekNumber - 1) * 7)
 
   const sunday = new Date(start)
   const friday = new Date(start)
-  friday.setDate(friday.getDate() + 5) // 일요일 기준 같은 주 금요일
+  friday.setUTCDate(friday.getUTCDate() + 5) // 일요일 기준 같은 주 금요일
 
   const format = (d: Date) => {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(d.getUTCDate()).padStart(2, '0')
     return `${y}-${m}-${day}`
   }
 
