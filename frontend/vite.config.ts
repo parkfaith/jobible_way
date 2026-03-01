@@ -40,6 +40,11 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // 새 서비스워커 즉시 활성화 (이전 캐시 즉시 교체)
+        skipWaiting: true,
+        clientsClaim: true,
+        // 탐색 요청은 항상 네트워크 우선 (SPA 라우팅 캐시 문제 방지)
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard/,

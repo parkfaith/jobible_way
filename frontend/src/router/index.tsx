@@ -6,18 +6,28 @@ import { useAuth } from '../lib/AuthContext'
 import OnboardingPage from '../pages/OnboardingPage'
 import LoginPage from '../pages/LoginPage'
 
+// 동적 import 실패 시 자동 새로고침 (배포 후 캐시 불일치 방지)
+function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>) {
+  return lazy(() =>
+    importFn().catch(() => {
+      window.location.reload()
+      return new Promise(() => {}) // 새로고침 동안 대기
+    })
+  )
+}
+
 // Lazy load (authenticated pages)
-const DashboardPage = lazy(() => import('../pages/DashboardPage'))
-const WeeksPage = lazy(() => import('../pages/WeeksPage'))
-const WeekDetailPage = lazy(() => import('../pages/WeekDetailPage'))
-const DailyPage = lazy(() => import('../pages/DailyPage'))
-const ProgressPage = lazy(() => import('../pages/ProgressPage'))
-const ProfilePage = lazy(() => import('../pages/ProfilePage'))
-const SermonPage = lazy(() => import('../pages/SermonPage'))
-const OiaPage = lazy(() => import('../pages/OiaPage'))
-const DiaryPage = lazy(() => import('../pages/DiaryPage'))
-const VersePage = lazy(() => import('../pages/VersePage'))
-const CurriculumPage = lazy(() => import('../pages/CurriculumPage'))
+const DashboardPage = lazyWithRetry(() => import('../pages/DashboardPage'))
+const WeeksPage = lazyWithRetry(() => import('../pages/WeeksPage'))
+const WeekDetailPage = lazyWithRetry(() => import('../pages/WeekDetailPage'))
+const DailyPage = lazyWithRetry(() => import('../pages/DailyPage'))
+const ProgressPage = lazyWithRetry(() => import('../pages/ProgressPage'))
+const ProfilePage = lazyWithRetry(() => import('../pages/ProfilePage'))
+const SermonPage = lazyWithRetry(() => import('../pages/SermonPage'))
+const OiaPage = lazyWithRetry(() => import('../pages/OiaPage'))
+const DiaryPage = lazyWithRetry(() => import('../pages/DiaryPage'))
+const VersePage = lazyWithRetry(() => import('../pages/VersePage'))
+const CurriculumPage = lazyWithRetry(() => import('../pages/CurriculumPage'))
 
 function PageLoading() {
   return (

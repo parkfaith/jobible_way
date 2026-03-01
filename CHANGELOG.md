@@ -5,6 +5,19 @@
 
 ---
 
+## [0.7.2] — 2026-03-01
+> 배포 후 캐시 불일치로 인한 화면 에러 방지
+
+### Fixed
+- **동적 import 실패 시 자동 새로고침** — 배포 후 이전 JS 파일을 로드하지 못할 때 사용자에게 에러 화면 대신 자동 새로고침으로 해결
+- **서비스워커 즉시 활성화** — `skipWaiting` + `clientsClaim` 설정으로 새 배포 시 캐시 즉시 교체
+
+### 수정 파일
+- `frontend/src/router/index.tsx` — `lazyWithRetry` 래퍼 추가
+- `frontend/vite.config.ts` — workbox `skipWaiting`, `clientsClaim` 설정
+
+---
+
 ## [0.7.1] — 2026-03-01
 > 온보딩 페이지에 PWA 설치 배너 추가
 
