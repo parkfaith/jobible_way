@@ -1,7 +1,8 @@
-import { getAuth } from 'firebase-admin/auth'
 import type { Context, Next } from 'hono'
+import type { AppEnv } from '../types'
+import { verifyFirebaseToken } from '../lib/firebase-admin'
 
-export const requireAuth = async (c: Context, next: Next) => {
+export const requireAuth = async (c: Context<AppEnv>, next: Next) => {
   const authHeader = c.req.header('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     return c.json({ error: 'Unauthorized' }, 401)
@@ -9,8 +10,8 @@ export const requireAuth = async (c: Context, next: Next) => {
 
   const token = authHeader.slice(7)
   try {
-    const decoded = await getAuth().verifyIdToken(token)
-    c.set('userId', decoded.uid)
+    const uid = await verifyFirebaseToken(token, c.env.FIREBASE_PROJECT_ID)
+    c.set('userId', uid)
     await next()
   } catch {
     return c.json({ error: 'Invalid token' }, 401)

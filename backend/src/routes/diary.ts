@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { and, eq, sql } from 'drizzle-orm'
-import { db } from '../db/index'
 import { diaryEntries } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
@@ -9,6 +8,7 @@ export const diaryRoute = new Hono<AppEnv>()
 
 // GET /api/weeks/:weekNumber/diary
 diaryRoute.get('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
@@ -21,6 +21,7 @@ diaryRoute.get('/', requireAuth, async (c) => {
 
 // PUT /api/weeks/:weekNumber/diary — upsert
 diaryRoute.put('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {

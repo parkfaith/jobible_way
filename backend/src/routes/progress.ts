@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { and, eq, gte, lte, desc } from 'drizzle-orm'
-import { db } from '../db/index'
 import { dailyChecks, weeklyTasks, curriculum } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
@@ -15,6 +14,7 @@ function localToday() {
 
 // GET /api/progress/heatmap?from=YYYY-MM-DD&to=YYYY-MM-DD
 progressRoute.get('/heatmap', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const from = c.req.query('from') ?? '2026-01-05'
   const to = c.req.query('to') ?? localToday()
@@ -38,6 +38,7 @@ progressRoute.get('/heatmap', requireAuth, async (c) => {
 
 // GET /api/progress/streak
 progressRoute.get('/streak', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
 
   const rows = await db.select().from(dailyChecks)
@@ -93,6 +94,7 @@ progressRoute.get('/streak', requireAuth, async (c) => {
 
 // GET /api/progress/volumes
 progressRoute.get('/volumes', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
 
   const tasks = await db.select().from(weeklyTasks)

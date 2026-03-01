@@ -5,6 +5,64 @@
 
 ---
 
+## [0.7.1] — 2026-03-01
+> 온보딩 페이지에 PWA 설치 배너 추가
+
+### Added
+- **온보딩 페이지(첫 화면)에 PWA 설치 배너 추가** — 로그인 전에도 홈 화면 추가 안내 표시
+  - 대시보드와 동일한 UI/동작 (iOS 안내, Android 설치 버튼, 닫기)
+
+### 수정 파일
+- `frontend/src/pages/OnboardingPage.tsx`
+
+---
+
+## [0.7.0] — 2026-03-01
+> 백엔드 Render → Cloudflare Workers 마이그레이션
+
+### Changed
+- **백엔드 런타임 교체**: Render (Node.js) → Cloudflare Workers (Edge)
+  - Cold start 완전 제거 (0ms)
+  - 무료 티어에서 무제한 서비스 운영 가능
+- **진입점 구조 변경**: `@hono/node-server` `serve()` → Workers `export default app`
+- **Firebase 인증 방식 변경**: `firebase-admin` SDK → `jose` 라이브러리 JWT 직접 검증
+  - Workers 환경에서 Node.js 전용 SDK 사용 불가로 인한 교체
+  - Google 공개 키(JWK) 기반 토큰 검증 + 메모리 캐시
+- **환경변수 처리 변경**: `dotenv` + `process.env` → Hono `c.env` Bindings
+  - `env.ts`를 타입 정의 전용으로 변경
+- **DB 클라이언트 구조 변경**: 전역 싱글톤 → 미들웨어 주입 팩토리 함수
+  - `createDb(env)` 팩토리로 변경, `c.get('db')`로 라우트에서 접근
+- **Health check**: `process.uptime()` 제거 → `runtime: 'cloudflare-workers'` 표시
+
+### Added
+- `backend/wrangler.toml` — Cloudflare Workers 배포 설정
+
+### Removed
+- `@hono/node-server`, `firebase-admin`, `dotenv`, `tsup` 의존성 제거
+- 기존 Node.js 서버 실행 코드 (`serve()`, `PORT` 등)
+
+### 수정 파일
+- `backend/package.json` — 의존성 및 scripts 변경
+- `backend/tsconfig.json` — Workers 타입 추가
+- `backend/wrangler.toml` (신규)
+- `backend/src/index.ts` — Workers export 진입점
+- `backend/src/env.ts` — 타입 정의 전용
+- `backend/src/types.ts` — Bindings + db 변수 추가
+- `backend/src/lib/firebase-admin.ts` — jose JWT 검증
+- `backend/src/middleware/auth.ts` — verifyFirebaseToken 연동
+- `backend/src/db/index.ts` — createDb 팩토리
+- `backend/src/routes/health.ts`
+- `backend/src/routes/curriculum.ts`
+- `backend/src/routes/daily.ts`
+- `backend/src/routes/weekly.ts`
+- `backend/src/routes/sermon.ts`
+- `backend/src/routes/oia.ts`
+- `backend/src/routes/diary.ts`
+- `backend/src/routes/users.ts`
+- `backend/src/routes/progress.ts`
+
+---
+
 ## [0.6.0] — 2026-02-28
 > 첫 배포 — Render + Vercel + Turso
 

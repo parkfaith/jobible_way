@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { and, eq, sql } from 'drizzle-orm'
-import { db } from '../db/index'
 import { dailyChecks } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
@@ -15,6 +14,7 @@ function localToday() {
 
 // GET /api/daily?date=YYYY-MM-DD
 dailyRoute.get('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const date = c.req.query('date') ?? localToday()
   const [row] = await db.select().from(dailyChecks)
@@ -24,6 +24,7 @@ dailyRoute.get('/', requireAuth, async (c) => {
 
 // PUT /api/daily — upsert
 dailyRoute.put('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   let body: { date: string; prayer30min?: number; qtDone?: number; bibleReading?: number }
   try {

@@ -1,10 +1,11 @@
 import { Hono } from 'hono'
-import { db } from '../db/index'
 import { sql } from 'drizzle-orm'
+import type { AppEnv } from '../types'
 
-export const healthRoute = new Hono()
+export const healthRoute = new Hono<AppEnv>()
 
 healthRoute.get('/', async (c) => {
+  const db = c.get('db')
   let dbStatus = 'ok'
   try {
     await db.run(sql`SELECT 1`)
@@ -19,7 +20,7 @@ healthRoute.get('/', async (c) => {
     service: 'jobible-way-api',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
-    uptime: Math.floor(process.uptime()),
+    runtime: 'cloudflare-workers',
     db: dbStatus,
   }, status === 'ok' ? 200 : 503)
 })

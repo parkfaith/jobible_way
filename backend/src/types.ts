@@ -1,10 +1,11 @@
-import type { Hono } from 'hono'
+import type { Env } from './env'
+import type { Database } from './db/index'
 
-// Hono 컨텍스트에 userId 변수 타입 선언
+// Hono 컨텍스트에 Workers Bindings + userId/db 변수 타입 선언
 export type AppEnv = {
+  Bindings: Env
   Variables: {
     userId: string
+    db: Database
   }
 }
-
-export type AppHono = Hono<AppEnv>

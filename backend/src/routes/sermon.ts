@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { and, eq, sql } from 'drizzle-orm'
-import { db } from '../db/index'
 import { sermonNotes } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
@@ -9,6 +8,7 @@ export const sermonRoute = new Hono<AppEnv>()
 
 // GET /api/weeks/:weekNumber/sermon — 해당 주차 설교 노트 목록
 sermonRoute.get('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
@@ -22,6 +22,7 @@ sermonRoute.get('/', requireAuth, async (c) => {
 
 // GET /api/weeks/:weekNumber/sermon/:service
 sermonRoute.get('/:service', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
@@ -39,6 +40,7 @@ sermonRoute.get('/:service', requireAuth, async (c) => {
 
 // PUT /api/weeks/:weekNumber/sermon/:service — upsert
 sermonRoute.put('/:service', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {

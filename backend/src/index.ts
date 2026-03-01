@@ -1,4 +1,3 @@
-import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
@@ -11,10 +10,10 @@ import { oiaRoute, oiaItemRoute } from './routes/oia'
 import { diaryRoute } from './routes/diary'
 import { usersRoute } from './routes/users'
 import { progressRoute } from './routes/progress'
-import { env } from './env'
-import './lib/firebase-admin'
+import { createDb } from './db/index'
+import type { AppEnv } from './types'
 
-const app = new Hono()
+const app = new Hono<AppEnv>()
 
 // Global error handler
 app.onError((err, c) => {
@@ -25,19 +24,23 @@ app.onError((err, c) => {
 // 404 handler
 app.notFound((c) => c.json({ error: 'Not found' }, 404))
 
-// 허용 오리진 목록
-const ALLOWED_ORIGINS = [
-  'https://jobible-way.vercel.app',
-  ...(process.env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()) ?? []),
-]
+// Middleware — DB 인스턴스 주입
+app.use('*', async (c, next) => {
+  c.set('db', createDb(c.env))
+  await next()
+})
 
-// Middleware
+// CORS
 app.use('*', cors({
-  origin: (origin) => {
-    if (!origin) return ALLOWED_ORIGINS[0] ?? 'http://localhost:5173'
-    if (env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) return origin
-    if (ALLOWED_ORIGINS.includes(origin)) return origin
-    return ALLOWED_ORIGINS[0] ?? 'http://localhost:5173'
+  origin: (origin, c) => {
+    const allowedOrigins = [
+      'https://jobible-way.vercel.app',
+      ...(c.env.ALLOWED_ORIGINS?.split(',').map((s: string) => s.trim()) ?? []),
+    ]
+    if (!origin) return allowedOrigins[0] ?? 'http://localhost:5173'
+    if (c.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) return origin
+    if (allowedOrigins.includes(origin)) return origin
+    return allowedOrigins[0] ?? 'http://localhost:5173'
   },
   credentials: true,
 }))
@@ -51,7 +54,7 @@ app.route('/api/weekly', weeklyRoute)
 app.route('/api/me', usersRoute)
 
 // 중첩 라우트: /api/weeks/:weekNumber/sermon, /api/weeks/:weekNumber/oia, /api/weeks/:weekNumber/diary
-const weeksApi = new Hono()
+const weeksApi = new Hono<AppEnv>()
 weeksApi.route('/:weekNumber/sermon', sermonRoute)
 weeksApi.route('/:weekNumber/oia', oiaRoute)
 weeksApi.route('/:weekNumber/diary', diaryRoute)
@@ -62,9 +65,5 @@ app.route('/api/oia', oiaItemRoute)
 
 // 진도 현황 API
 app.route('/api/progress', progressRoute)
-
-serve({ fetch: app.fetch, port: env.PORT }, () => {
-  console.log(`jobible Way API running on http://localhost:${env.PORT}`)
-})
 
 export default app

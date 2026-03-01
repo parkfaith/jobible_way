@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { and, eq, desc, sql } from 'drizzle-orm'
-import { db } from '../db/index'
 import { oiaNotes } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
@@ -9,6 +8,7 @@ export const oiaRoute = new Hono<AppEnv>()
 
 // GET /api/weeks/:weekNumber/oia — 해당 주차 OIA 목록
 oiaRoute.get('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
@@ -22,6 +22,7 @@ oiaRoute.get('/', requireAuth, async (c) => {
 
 // POST /api/weeks/:weekNumber/oia — 새 OIA 생성
 oiaRoute.post('/', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const weekNumber = parseInt(c.req.param('weekNumber'))
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
@@ -44,6 +45,7 @@ export const oiaItemRoute = new Hono<AppEnv>()
 
 // PUT /api/oia/:id — 수정
 oiaItemRoute.put('/:id', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   if (isNaN(id)) return c.json({ error: 'Invalid id' }, 400)
@@ -63,6 +65,7 @@ oiaItemRoute.put('/:id', requireAuth, async (c) => {
 
 // DELETE /api/oia/:id
 oiaItemRoute.delete('/:id', requireAuth, async (c) => {
+  const db = c.get('db')
   const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   if (isNaN(id)) return c.json({ error: 'Invalid id' }, 400)
