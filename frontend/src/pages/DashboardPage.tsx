@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <AppShell title="jobible Way">
+      <AppShell title="jobible Way" subtitle="낙원제일교회 제자훈련 2기">
         <div className="p-4 flex flex-col items-center pt-20 gap-3">
           <div className="w-8 h-8 border-2 border-[var(--color-secondary)] border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-[var(--color-text-secondary)]">데이터를 불러오는 중...</p>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <AppShell title="jobible Way">
+    <AppShell title="jobible Way" subtitle="낙원제일교회 제자훈련 2기">
       <div className="p-4 space-y-4">
         {/* 환영 메시지 */}
         <p className="text-sm text-[var(--color-text-secondary)]">

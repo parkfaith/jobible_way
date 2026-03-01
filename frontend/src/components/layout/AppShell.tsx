@@ -1,15 +1,24 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../ui/BottomNav'
+import { today } from '../../lib/date'
+
+function formatDateKo(dateStr: string) {
+  const [, m, d] = dateStr.split('-')
+  const days = ['일', '월', '화', '수', '목', '금', '토']
+  const dt = new Date(dateStr + 'T00:00:00+09:00')
+  return `${parseInt(m)}월 ${parseInt(d)}일 (${days[dt.getDay()]})`
+}
 
 interface AppShellProps {
   title?: string
+  subtitle?: string
   showBack?: boolean
   children: ReactNode
   rightAction?: ReactNode
 }
 
-export default function AppShell({ title, showBack = false, children, rightAction }: AppShellProps) {
+export default function AppShell({ title, subtitle, showBack = false, children, rightAction }: AppShellProps) {
   const navigate = useNavigate()
 
   function handleBack() {
@@ -26,7 +35,7 @@ export default function AppShell({ title, showBack = false, children, rightActio
       {title && (
         <header className="sticky top-0 z-40 bg-[var(--color-surface)]/95 backdrop-blur-sm border-b border-[var(--color-border)] pt-[env(safe-area-inset-top)]">
           <div className="flex items-center justify-between h-14 px-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 min-w-0">
               {showBack && (
                 <button
                   onClick={handleBack}
@@ -37,11 +46,21 @@ export default function AppShell({ title, showBack = false, children, rightActio
                   </svg>
                 </button>
               )}
-              <h1 className="text-lg font-semibold font-[var(--font-heading)] text-[var(--color-primary)]">
-                {title}
-              </h1>
+              <div className="min-w-0">
+                <h1 className="text-lg font-semibold font-[var(--font-heading)] text-[var(--color-primary)] leading-tight">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="text-[10px] text-[var(--color-text-secondary)] font-[var(--font-ui)] leading-tight">{subtitle}</p>
+                )}
+              </div>
             </div>
-            {rightAction && <div>{rightAction}</div>}
+            <div className="flex items-center gap-2 shrink-0">
+              {rightAction && <div>{rightAction}</div>}
+              <span className="text-[11px] text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+                {formatDateKo(today())}
+              </span>
+            </div>
           </div>
         </header>
       )}
