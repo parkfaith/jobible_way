@@ -5,6 +5,17 @@
 
 ---
 
+## [0.9.7] — 2026-03-02
+> Google 로그인 popup 우선 전략으로 복구
+
+### 수정
+- **LoginPage**: 모바일 UA 감지 → `signInWithRedirect` 우선 방식이 Chrome 데스크톱에서도 로그인 실패 유발. `signInWithPopup` 우선 시도 후 팝업 차단/닫힘 시에만 redirect 폴백하도록 변경
+
+### 수정 파일
+- `frontend/src/pages/LoginPage.tsx` — popup 우선 + redirect 폴백 전략
+
+---
+
 ## [0.9.6] — 2026-03-02
 > 백엔드 시간 기준 UTC → KST 전환
 

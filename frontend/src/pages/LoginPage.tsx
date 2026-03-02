@@ -36,12 +36,18 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      // 모바일에서는 redirect 방식이 팝업보다 안정적
-      if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
-        await signInWithRedirect(auth, googleProvider)
-      } else {
+      // popup 우선 시도 — 실패 시 redirect 폴백 (모바일 팝업 차단 대비)
+      try {
         await signInWithPopup(auth, googleProvider)
         navigate('/home', { replace: true })
+      } catch (popupErr: unknown) {
+        const code = (popupErr as { code?: string })?.code
+        // 팝업 차단/닫힘 시에만 redirect 폴백
+        if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, googleProvider)
+        } else {
+          throw popupErr
+        }
       }
     } catch (err) {
       setError('로그인에 실패했습니다. 다시 시도해주세요.')
