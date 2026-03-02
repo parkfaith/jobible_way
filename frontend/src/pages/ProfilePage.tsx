@@ -16,6 +16,12 @@ export default function ProfilePage() {
   const { user, signOut } = useAuth()
   const [streak, setStreak] = useState<StreakData>({ currentStreak: 0, maxStreak: 0, totalDone: 0 })
 
+  // 현재 주차 자동 계산
+  const week1 = new Date('2026-02-22T00:00:00+09:00')
+  const now = new Date()
+  const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
+  const currentWeek = Math.max(1, Math.min(32, diff + 1))
+
   useEffect(() => {
     api.get('/api/progress/streak').then(setStreak).catch(() => {})
   }, [])
@@ -55,7 +61,7 @@ export default function ProfilePage() {
           <h3 className="text-sm font-medium text-[var(--color-primary)] font-[var(--font-ui)] mb-3">훈련 현황</h3>
           <div className="space-y-3">
             <InfoRow label="훈련 과정" value="제2기 제자훈련" />
-            <InfoRow label="현재 주차" value="1주차" />
+            <InfoRow label="현재 주차" value={`${currentWeek}주차`} />
             <InfoRow label="연속 달성" value={`${streak.currentStreak}일`} />
             <InfoRow label="전체 완료일" value={`${streak.totalDone}일`} />
           </div>
