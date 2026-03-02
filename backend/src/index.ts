@@ -10,6 +10,7 @@ import { oiaRoute, oiaItemRoute } from './routes/oia'
 import { diaryRoute } from './routes/diary'
 import { usersRoute } from './routes/users'
 import { progressRoute } from './routes/progress'
+import { adminRoute } from './routes/admin'
 import { createDb } from './db/index'
 import type { AppEnv } from './types'
 
@@ -65,5 +66,8 @@ app.route('/api/oia', oiaItemRoute)
 
 // 진도 현황 API
 app.route('/api/progress', progressRoute)
+
+// 관리자 API
+app.route('/api/admin', adminRoute)
 
 export default app

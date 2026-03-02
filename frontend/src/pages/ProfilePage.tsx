@@ -71,6 +71,9 @@ export default function ProfilePage() {
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
           <MenuButton label="전체 커리큘럼" onClick={() => navigate('/curriculum')} />
           <MenuButton label="진도 현황" onClick={() => navigate('/progress')} />
+          {user?.email === 'parkfaith75@gmail.com' && (
+            <MenuButton label="관리자" onClick={() => navigate('/admin')} />
+          )}
         </div>
 
         {/* 앱 정보 */}

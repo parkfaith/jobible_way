@@ -5,6 +5,27 @@
 
 ---
 
+## [0.9.5] — 2026-03-02
+> 관리자 전용 회원 목록 + 최종 로그인 시간 확인 페이지
+
+### 추가
+- **관리자 페이지** (`/admin`): `parkfaith75@gmail.com` 전용 — 전체 회원 목록과 최종 로그인 시간 확인 가능
+- **관리자 API** (`/api/admin/users`): 백엔드에서 이메일 기반 관리자 권한 체크 후 회원 데이터 반환
+- **최종 로그인 시간 기록**: `users.lastLoginAt` 컬럼 추가 — 로그인(upsert) 시 자동 업데이트
+- **ProfilePage 관리자 메뉴**: 관리자 이메일로 로그인한 경우에만 "관리자" 메뉴 표시
+
+### 수정 파일
+- `backend/src/db/schema.ts` — `users` 테이블에 `lastLoginAt` 컬럼 추가
+- `backend/src/routes/users.ts` — POST upsert 시 `lastLoginAt` 업데이트
+- `backend/src/routes/admin.ts` — **신규** 관리자 전용 라우트 (이메일 권한 체크)
+- `backend/src/index.ts` — admin 라우트 등록
+- `frontend/src/pages/AdminPage.tsx` — **신규** 관리자 페이지 UI
+- `frontend/src/pages/ProfilePage.tsx` — 관리자 메뉴 버튼 추가
+- `frontend/src/router/index.tsx` — `/admin` 라우트 등록
+- `backend/drizzle/migrations/0006_sharp_morlocks.sql` — `last_login_at` 컬럼 마이그레이션
+
+---
+
 ## [0.9.4] — 2026-03-02
 > 인앱 브라우저 Google OAuth 차단 대응 + 모바일 로그인 안정화
 

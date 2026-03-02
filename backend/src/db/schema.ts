@@ -7,6 +7,7 @@ export const users = sqliteTable('users', {
   email: text('email').notNull().unique(),
   cohort: integer('cohort').default(2),
   startDate: text('start_date').notNull(),
+  lastLoginAt: text('last_login_at').default(sql`(datetime('now'))`),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
 })
 

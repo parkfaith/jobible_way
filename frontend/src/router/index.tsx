@@ -47,6 +47,7 @@ const OiaPage = lazyWithRetry(() => import('../pages/OiaPage'))
 const DiaryPage = lazyWithRetry(() => import('../pages/DiaryPage'))
 const VersePage = lazyWithRetry(() => import('../pages/VersePage'))
 const CurriculumPage = lazyWithRetry(() => import('../pages/CurriculumPage'))
+const AdminPage = lazyWithRetry(() => import('../pages/AdminPage'))
 
 function PageLoading() {
   return (
@@ -177,6 +178,7 @@ export const router = createBrowserRouter([
       { path: '/progress', element: <ProgressPage /> },
       { path: '/curriculum', element: <CurriculumPage /> },
       { path: '/profile', element: <ProfilePage /> },
+      { path: '/admin', element: <AdminPage /> },
     ],
   },
   {
