@@ -5,6 +5,20 @@
 
 ---
 
+## [0.9.4] — 2026-03-02
+> 인앱 브라우저 Google OAuth 차단 대응 + 모바일 로그인 안정화
+
+### 개선
+- **인앱 브라우저 감지**: 카카오톡, 라인, 인스타그램 등 인앱 브라우저에서 접속 시 `403: disallowed_useragent` 방지 — 외부 브라우저로 열기 안내 표시
+- **모바일 로그인 방식**: 모바일 기기에서 `signInWithPopup` → `signInWithRedirect`로 변경 (팝업 차단 이슈 방지)
+- **Redirect 결과 처리**: `AuthContext`에서 `getRedirectResult` 호출 추가
+
+### 수정 파일
+- `frontend/src/pages/LoginPage.tsx` — 인앱 브라우저 감지 + 외부 브라우저 유도 UI + 모바일 redirect 로그인
+- `frontend/src/lib/AuthContext.tsx` — `getRedirectResult` 처리 추가
+
+---
+
 ## [0.9.3] — 2026-03-02
 > iPad PWA 캐시 오류(MIME type) 대응 강화
 
