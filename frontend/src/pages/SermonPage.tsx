@@ -16,7 +16,7 @@ interface SermonVideo {
 }
 
 interface WeeklyData {
-  sermonWatched: number
+  sermonWatched: number  // 비트마스크: sunday=1, friday=2, 둘 다=3
 }
 
 const SERVICES = [
@@ -55,9 +55,13 @@ export default function SermonPage() {
     }
   }
 
+  // 현재 service의 비트값 (sunday=1, friday=2)
+  const serviceBit = service === 'sunday' ? 1 : 2
+  const isCurrentWatched = !!(weekly.sermonWatched & serviceBit)
+
   async function toggleWatched() {
     const prev = weekly.sermonWatched
-    const next = prev ? 0 : 1
+    const next = prev ^ serviceBit  // 해당 비트 토글
     setWeekly({ sermonWatched: next })
     try {
       await api.put(`/api/weekly/${weekNumber}`, { sermonWatched: next })
@@ -81,17 +85,17 @@ export default function SermonPage() {
               className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-all ${
                 disabled
                   ? 'opacity-40 cursor-not-allowed bg-[var(--color-surface)] border-[var(--color-border)]'
-                  : weekly.sermonWatched
+                  : isCurrentWatched
                     ? 'bg-[var(--color-success)]/5 border-[var(--color-success)]/30 cursor-pointer'
                     : 'bg-[var(--color-surface)] border-[var(--color-border)] cursor-pointer'
               }`}
             >
               <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                weekly.sermonWatched && !disabled
+                isCurrentWatched && !disabled
                   ? 'bg-[var(--color-success)] text-white'
                   : 'border-2 border-[var(--color-border)]'
               }`}>
-                {!!weekly.sermonWatched && !disabled && (
+                {!!isCurrentWatched && !disabled && (
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
@@ -100,7 +104,7 @@ export default function SermonPage() {
               <span className={`text-sm font-[var(--font-ui)] ${
                 disabled
                   ? 'text-[var(--color-text-secondary)]'
-                  : weekly.sermonWatched
+                  : isCurrentWatched
                     ? 'text-[var(--color-success)]'
                     : 'text-[var(--color-text-primary)]'
               }`}>

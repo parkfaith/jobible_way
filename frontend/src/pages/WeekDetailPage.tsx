@@ -125,8 +125,8 @@ export default function WeekDetailPage() {
     },
   ]
 
+  // 설교 시청은 SermonPage에서 주일/금요 각각 체크 (비트마스크)
   const checkItems = [
-    { key: 'sermonWatched' as const, label: '설교 시청 완료', done: !!weekly.sermonWatched },
     { key: 'verseMemorized' as const, label: '성구 암송 완료', done: !!weekly.verseMemorized },
     { key: 'previewDone' as const, label: '예습 완료', done: !!weekly.previewDone },
     ...(curr?.requiredBook ? [{ key: 'bookReportDone' as const, label: '독서보고서 완료', done: !!weekly.bookReportDone }] : []),

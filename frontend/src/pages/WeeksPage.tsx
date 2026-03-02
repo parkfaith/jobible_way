@@ -52,7 +52,8 @@ export default function WeeksPage() {
   function getWeeklyDoneCount(weekNumber: number): number {
     const w = weeklyMap[weekNumber]
     if (!w) return 0
-    return (w.sermonWatched ? 1 : 0) + (w.verseMemorized ? 1 : 0) + (w.previewDone ? 1 : 0) + (w.bookReportDone ? 1 : 0)
+    // sermonWatched 비트마스크: sunday=1, friday=2 — 둘 다(3)일 때만 완료
+    return (w.sermonWatched === 3 ? 1 : 0) + (w.verseMemorized ? 1 : 0) + (w.previewDone ? 1 : 0) + (w.bookReportDone ? 1 : 0)
   }
 
   if (loading) {

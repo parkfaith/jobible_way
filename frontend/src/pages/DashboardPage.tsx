@@ -22,7 +22,7 @@ interface DailyData {
 }
 
 interface WeeklyData {
-  sermonWatched: number
+  sermonWatched: number  // 비트마스크: sunday=1, friday=2, 둘 다=3
   verseMemorized: number
   previewDone: number
   bookReportDone: number
@@ -192,41 +192,64 @@ export default function DashboardPage() {
         })()}
 
         {/* 이번 주 주간 체크 현황 */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-[var(--color-primary)]">{currentWeek}주차 주간 체크</h3>
-            <span className="text-xs text-[var(--color-text-secondary)]">
-              {(weekly.sermonWatched ? 1 : 0) + (weekly.verseMemorized ? 1 : 0) + (weekly.previewDone ? 1 : 0) + (weekly.bookReportDone ? 1 : 0)}/4 완료
-            </span>
-          </div>
-          <div className="space-y-2">
-            {[
-              { label: '설교 시청', done: !!weekly.sermonWatched },
-              { label: '성구 암송', done: !!weekly.verseMemorized },
-              { label: '예습 완료', done: !!weekly.previewDone },
-              { label: '독서보고서', done: !!weekly.bookReportDone },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-2.5">
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  item.done
-                    ? 'bg-[var(--color-success)] text-white'
-                    : 'border-2 border-[var(--color-border)]'
-                }`}>
-                  {item.done && (
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </div>
-                <span className={`text-sm font-[var(--font-ui)] ${
-                  item.done ? 'text-[var(--color-success)]' : 'text-[var(--color-text-secondary)]'
-                }`}>
-                  {item.label}
+        {(() => {
+          // 설교 시청: sermonWatched 비트마스크 — sunday=1, friday=2, 둘 다=3
+          const sundayDone = !!(weekly.sermonWatched & 1)
+          const fridayDone = !!(weekly.sermonWatched & 2)
+          const sermonDoneCount = (sundayDone ? 1 : 0) + (fridayDone ? 1 : 0)
+          const sermonStatus = sermonDoneCount === 2 ? 'done' : sermonDoneCount === 1 ? 'partial' : 'none'
+          const weeklyItems = [
+            { label: '설교 시청', status: sermonStatus, sub: sermonDoneCount === 2 ? undefined : `${sermonDoneCount}/2` },
+            { label: '성구 암송', status: weekly.verseMemorized ? 'done' as const : 'none' as const },
+            { label: '예습 완료', status: weekly.previewDone ? 'done' as const : 'none' as const },
+            { label: '독서보고서', status: weekly.bookReportDone ? 'done' as const : 'none' as const },
+          ]
+          const doneCount = weeklyItems.filter(i => i.status === 'done').length
+          return (
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-[var(--color-primary)]">{currentWeek}주차 주간 체크</h3>
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                  {doneCount}/{weeklyItems.length} 완료
                 </span>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="space-y-2">
+                {weeklyItems.map((item) => (
+                  <div key={item.label} className="flex items-center gap-2.5">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      item.status === 'done'
+                        ? 'bg-[var(--color-success)] text-white'
+                        : item.status === 'partial'
+                          ? 'bg-[var(--color-secondary)] text-white'
+                          : 'border-2 border-[var(--color-border)]'
+                    }`}>
+                      {item.status === 'done' && (
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                      {item.status === 'partial' && (
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className={`text-sm font-[var(--font-ui)] ${
+                      item.status === 'done'
+                        ? 'text-[var(--color-success)]'
+                        : item.status === 'partial'
+                          ? 'text-[var(--color-secondary)]'
+                          : 'text-[var(--color-text-secondary)]'
+                    }`}>
+                      {item.label}
+                      {item.sub && <span className="text-xs ml-1 opacity-70">({item.sub})</span>}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* 빠른 메뉴 */}
         <div className="grid grid-cols-2 gap-3">

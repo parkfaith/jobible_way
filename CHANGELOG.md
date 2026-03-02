@@ -5,6 +5,24 @@
 
 ---
 
+## [0.9.2] — 2026-03-02
+> 설교 시청 완료를 주일/금요 각각 분리 체크
+
+### 변경
+- **설교 시청 비트마스크**: `sermonWatched`를 sunday=1, friday=2 비트마스크로 변경 — 주일/금요 설교 각각 시청 완료 체크
+- **SermonPage**: 탭(주일/금요)별로 독립적인 시청 완료 토글
+- **홈 대시보드 주간 체크**: 설교 시청 3단계 표시 — 미완료(빈 원), 부분 완료(노랑 1/2), 전체 완료(초록 체크)
+- **WeekDetailPage 주간 체크**: 설교 시청 항목 제거 (SermonPage에서 개별 체크)
+- **WeeksPage 완료율**: 주일+금요 모두 시청 시에만 설교 시청 완료로 카운트
+
+### 수정 파일
+- `frontend/src/pages/SermonPage.tsx` — 비트마스크 기반 서비스별 시청 토글
+- `frontend/src/pages/DashboardPage.tsx` — 설교 시청 3단계 UI
+- `frontend/src/pages/WeekDetailPage.tsx` — 설교 시청 항목 제거
+- `frontend/src/pages/WeeksPage.tsx` — 비트마스크 기반 완료율 계산
+
+---
+
 ## [0.9.1] — 2026-03-02
 > 주차별 과제물 확인 + 메모 기능
 
