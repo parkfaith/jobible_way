@@ -5,6 +5,20 @@
 
 ---
 
+## [0.9.3] — 2026-03-02
+> iPad PWA 캐시 오류(MIME type) 대응 강화
+
+### 개선
+- **Workbox 설정 강화**: `cleanupOutdatedCaches` 추가 (이전 버전 캐시 자동 정리), `navigateFallbackDenylist` 추가 (JS/CSS 정적 자산이 HTML 폴백에 걸리지 않도록 차단)
+- **RouteErrorBoundary**: MIME type 에러 패턴 감지 추가 — `text/html is not a valid JavaScript MIME type` 에러 시 캐시 삭제 후 자동 새로고침
+- **lazyWithRetry**: MIME type 에러 감지 시 SW 캐시 전체 삭제 후 리로드 (청크 불일치 완전 해소)
+
+### 수정 파일
+- `frontend/vite.config.ts` — Workbox `cleanupOutdatedCaches`, `navigateFallbackDenylist` 추가
+- `frontend/src/router/index.tsx` — MIME type 에러 감지 + 캐시 삭제 로직
+
+---
+
 ## [0.9.2] — 2026-03-02
 > 설교 시청 완료를 주일/금요 각각 분리 체크
 

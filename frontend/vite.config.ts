@@ -43,8 +43,12 @@ export default defineConfig({
         // 새 서비스워커 즉시 활성화 (이전 캐시 즉시 교체)
         skipWaiting: true,
         clientsClaim: true,
+        // 이전 버전 캐시 자동 정리
+        cleanupOutdatedCaches: true,
         // 탐색 요청은 항상 네트워크 우선 (SPA 라우팅 캐시 문제 방지)
         navigateFallback: '/index.html',
+        // JS/CSS 등 정적 자산 요청이 navigateFallback에 걸리지 않도록 차단
+        navigateFallbackDenylist: [/\.[a-zA-Z]{2,}$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard/,

@@ -11,7 +11,7 @@ const RETRY_KEY = 'chunk-retry'
 
 function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>) {
   return lazy(() =>
-    importFn().catch(() => {
+    importFn().catch((err) => {
       const lastRetry = sessionStorage.getItem(RETRY_KEY)
       const now = Date.now()
       // 10초 이내 재시도면 무한 루프 방지
@@ -19,6 +19,16 @@ function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>
         return Promise.reject(new Error('청크 로드 실패'))
       }
       sessionStorage.setItem(RETRY_KEY, String(now))
+      // MIME type 에러 시 SW 캐시 전체 삭제 후 리로드
+      const isMimeError = err instanceof Error && (
+        err.message.includes('MIME type') || err.message.includes('is not a valid JavaScript')
+      )
+      if (isMimeError && 'caches' in window) {
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+          window.location.reload()
+        })
+        return new Promise(() => {})
+      }
       window.location.reload()
       return new Promise(() => {})
     })
@@ -54,7 +64,9 @@ function RouteErrorBoundary() {
     error.message.includes('dynamically imported module') ||
     error.message.includes('Failed to fetch') ||
     error.message.includes('Loading chunk') ||
-    error.message.includes('청크 로드 실패')
+    error.message.includes('청크 로드 실패') ||
+    error.message.includes('MIME type') ||
+    error.message.includes('is not a valid JavaScript')
   )
 
   if (isChunkError) {
@@ -62,6 +74,16 @@ function RouteErrorBoundary() {
     const now = Date.now()
     if (!lastRetry || now - Number(lastRetry) > 10000) {
       sessionStorage.setItem(RETRY_KEY, String(now))
+      // MIME type 에러 시 SW 캐시 전체 삭제 후 리로드
+      const isMimeError = error instanceof Error && (
+        error.message.includes('MIME type') || error.message.includes('is not a valid JavaScript')
+      )
+      if (isMimeError && 'caches' in window) {
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+          window.location.reload()
+        })
+        return null
+      }
       window.location.reload()
       return null
     }
