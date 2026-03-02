@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { weeklyTasks } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { kstDatetime } from '../lib/date'
 import type { AppEnv } from '../types'
 
 export const weeklyRoute = new Hono<AppEnv>()
@@ -47,7 +48,7 @@ weeklyRoute.put('/:weekNumber', requireAuth, async (c) => {
   await db.insert(weeklyTasks).values({ userId, weekNumber, verseMemorized, bookReportDone, previewDone, sermonWatched, assignmentMemo })
     .onConflictDoUpdate({
       target: [weeklyTasks.userId, weeklyTasks.weekNumber],
-      set: { verseMemorized, bookReportDone, previewDone, sermonWatched, assignmentMemo, updatedAt: sql`(datetime('now'))` },
+      set: { verseMemorized, bookReportDone, previewDone, sermonWatched, assignmentMemo, updatedAt: kstDatetime() },
     })
   return c.json({ ok: true })
 })

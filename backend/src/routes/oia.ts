@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
-import { and, eq, desc, sql } from 'drizzle-orm'
+import { and, eq, desc } from 'drizzle-orm'
 import { oiaNotes } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { kstDatetime } from '../lib/date'
 import type { AppEnv } from '../types'
 
 export const oiaRoute = new Hono<AppEnv>()
@@ -57,7 +58,7 @@ oiaItemRoute.put('/:id', requireAuth, async (c) => {
   }
   const { scripture, observation, interpretation, application } = body
   const result = await db.update(oiaNotes)
-    .set({ scripture, observation, interpretation, application, updatedAt: sql`(datetime('now'))` })
+    .set({ scripture, observation, interpretation, application, updatedAt: kstDatetime() })
     .where(and(eq(oiaNotes.id, id), eq(oiaNotes.userId, userId)))
   if (result.rowsAffected === 0) return c.json({ error: 'Not found' }, 404)
   return c.json({ ok: true })

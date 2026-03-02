@@ -11,12 +11,11 @@ interface UserInfo {
   createdAt: string | null
 }
 
-// UTC datetime 문자열을 KST 표시용으로 변환
-function formatKST(utcStr: string | null): string {
-  if (!utcStr) return '-'
-  // KST = UTC + 9
-  const kst = new Date(new Date(utcStr + 'Z').getTime() + 9 * 60 * 60 * 1000)
-  return `${kst.getFullYear()}.${String(kst.getMonth() + 1).padStart(2, '0')}.${String(kst.getDate()).padStart(2, '0')} ${String(kst.getHours()).padStart(2, '0')}:${String(kst.getMinutes()).padStart(2, '0')}`
+// KST datetime 문자열 포맷 (DB에 이미 KST로 저장됨)
+function formatDatetime(str: string | null): string {
+  if (!str) return '-'
+  // "2026-03-02 17:30:00" → "2026.03.02 17:30"
+  return str.replace(/-/g, '.').slice(0, 16)
 }
 
 export default function AdminPage() {
@@ -97,7 +96,7 @@ export default function AdminPage() {
                   <div className="text-right shrink-0">
                     <p className="text-[10px] text-[var(--color-text-secondary)] leading-tight">최종 로그인</p>
                     <p className="text-xs text-[var(--color-text-primary)] font-medium">
-                      {formatKST(u.lastLoginAt)}
+                      {formatDatetime(u.lastLoginAt)}
                     </p>
                   </div>
                 </div>

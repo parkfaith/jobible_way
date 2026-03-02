@@ -5,6 +5,28 @@
 
 ---
 
+## [0.9.6] — 2026-03-02
+> 백엔드 시간 기준 UTC → KST 전환
+
+### 수정
+- **KST 날짜/시간 유틸리티**: `backend/src/lib/date.ts` 신규 — `kstToday()`, `kstDatetime()` 함수로 Workers UTC 환경에서 KST 기준 날짜/시간 생성
+- **일일 체크**: `localToday()` → `kstToday()`, `datetime('now')` → `kstDatetime()` (자정~오전9시 날짜 불일치 수정)
+- **진도 현황**: 스트릭 계산, 히트맵 기본 날짜 KST 기준으로 수정
+- **주간 체크/OIA/일기/사용자**: `updatedAt`, `lastLoginAt`을 KST datetime으로 저장
+- **관리자 페이지**: DB에 KST로 저장되므로 UTC→KST 변환 로직 제거, 단순 포맷으로 변경
+
+### 수정 파일
+- `backend/src/lib/date.ts` — **신규** KST 유틸리티
+- `backend/src/routes/daily.ts` — `kstToday()`, `kstDatetime()` 적용
+- `backend/src/routes/progress.ts` — `kstToday()` 적용
+- `backend/src/routes/weekly.ts` — `kstDatetime()` 적용
+- `backend/src/routes/oia.ts` — `kstDatetime()` 적용
+- `backend/src/routes/diary.ts` — `kstDatetime()` 적용
+- `backend/src/routes/users.ts` — `kstDatetime()` 적용
+- `frontend/src/pages/AdminPage.tsx` — `formatKST` → `formatDatetime` (단순 포맷)
+
+---
+
 ## [0.9.5] — 2026-03-02
 > 관리자 전용 회원 목록 + 최종 로그인 시간 확인 페이지
 

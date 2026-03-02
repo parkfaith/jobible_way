@@ -2,22 +2,17 @@ import { Hono } from 'hono'
 import { and, eq, gte, lte, desc } from 'drizzle-orm'
 import { dailyChecks, weeklyTasks, curriculum } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { kstToday } from '../lib/date'
 import type { AppEnv } from '../types'
 
 export const progressRoute = new Hono<AppEnv>()
-
-// 로컬 날짜 헬퍼
-function localToday() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
 
 // GET /api/progress/heatmap?from=YYYY-MM-DD&to=YYYY-MM-DD
 progressRoute.get('/heatmap', requireAuth, async (c) => {
   const db = c.get('db')
   const userId = c.get('userId')
   const from = c.req.query('from') ?? '2026-01-05'
-  const to = c.req.query('to') ?? localToday()
+  const to = c.req.query('to') ?? kstToday()
 
   const rows = await db.select().from(dailyChecks)
     .where(
@@ -53,7 +48,7 @@ progressRoute.get('/streak', requireAuth, async (c) => {
 
   // 현재 스트릭
   let currentStreak = 0
-  const todayStr = localToday()
+  const todayStr = kstToday()
   const date = new Date(`${todayStr}T00:00:00`)
   // 오늘 완료 안 했으면 어제부터 카운트
   if (!fullyDoneDates.has(todayStr)) {

@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { diaryEntries } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { kstDatetime } from '../lib/date'
 import type { AppEnv } from '../types'
 
 export const diaryRoute = new Hono<AppEnv>()
@@ -40,7 +41,7 @@ diaryRoute.put('/', requireAuth, async (c) => {
 
   if (existing) {
     await db.update(diaryEntries)
-      .set({ content, updatedAt: sql`(datetime('now'))` })
+      .set({ content, updatedAt: kstDatetime() })
       .where(eq(diaryEntries.id, existing.id))
   } else {
     await db.insert(diaryEntries).values({ userId, weekNumber, content })

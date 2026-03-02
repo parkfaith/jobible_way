@@ -1,22 +1,17 @@
 import { Hono } from 'hono'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { dailyChecks } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { kstToday, kstDatetime } from '../lib/date'
 import type { AppEnv } from '../types'
 
 export const dailyRoute = new Hono<AppEnv>()
-
-// 로컬 날짜 헬퍼 (KST)
-function localToday() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
 
 // GET /api/daily?date=YYYY-MM-DD
 dailyRoute.get('/', requireAuth, async (c) => {
   const db = c.get('db')
   const userId = c.get('userId')
-  const date = c.req.query('date') ?? localToday()
+  const date = c.req.query('date') ?? kstToday()
   const [row] = await db.select().from(dailyChecks)
     .where(and(eq(dailyChecks.userId, userId), eq(dailyChecks.date, date)))
   return c.json(row ?? { userId, date, prayer30min: 0, qtDone: 0, bibleReading: 0, verseReading: 0 })
@@ -38,7 +33,7 @@ dailyRoute.put('/', requireAuth, async (c) => {
   await db.insert(dailyChecks).values({ userId, date, prayer30min, qtDone, bibleReading, verseReading })
     .onConflictDoUpdate({
       target: [dailyChecks.userId, dailyChecks.date],
-      set: { prayer30min, qtDone, bibleReading, verseReading, updatedAt: sql`(datetime('now'))` },
+      set: { prayer30min, qtDone, bibleReading, verseReading, updatedAt: kstDatetime() },
     })
   return c.json({ ok: true })
 })

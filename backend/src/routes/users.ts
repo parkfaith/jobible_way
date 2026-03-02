@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { users } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { kstDatetime } from '../lib/date'
 import type { AppEnv } from '../types'
 
 export const usersRoute = new Hono<AppEnv>()
@@ -28,6 +29,6 @@ usersRoute.post('/', requireAuth, async (c) => {
   const { name, email, startDate } = body
   if (!name || !email || !startDate) return c.json({ error: 'name, email and startDate are required' }, 400)
   await db.insert(users).values({ id: userId, name, email, startDate })
-    .onConflictDoUpdate({ target: users.id, set: { name, lastLoginAt: sql`datetime('now')` } })
+    .onConflictDoUpdate({ target: users.id, set: { name, lastLoginAt: kstDatetime() } })
   return c.json({ ok: true })
 })
