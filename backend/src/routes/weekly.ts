@@ -25,7 +25,7 @@ weeklyRoute.get('/:weekNumber', requireAuth, async (c) => {
   }
   const [row] = await db.select().from(weeklyTasks)
     .where(and(eq(weeklyTasks.userId, userId), eq(weeklyTasks.weekNumber, weekNumber)))
-  return c.json(row ?? { userId, weekNumber, verseMemorized: 0, bookReportDone: 0, previewDone: 0, sermonWatched: 0 })
+  return c.json(row ?? { userId, weekNumber, verseMemorized: 0, bookReportDone: 0, previewDone: 0, sermonWatched: 0, assignmentMemo: null })
 })
 
 // PUT /api/weekly/:weekNumber — upsert
@@ -36,18 +36,18 @@ weeklyRoute.put('/:weekNumber', requireAuth, async (c) => {
   if (isNaN(weekNumber) || weekNumber < 1 || weekNumber > 32) {
     return c.json({ error: 'Invalid week number' }, 400)
   }
-  let body: { verseMemorized?: number; bookReportDone?: number; previewDone?: number; sermonWatched?: number }
+  let body: { verseMemorized?: number; bookReportDone?: number; previewDone?: number; sermonWatched?: number; assignmentMemo?: string | null }
   try {
     body = await c.req.json()
   } catch {
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
-  const { verseMemorized, bookReportDone, previewDone, sermonWatched } = body
+  const { verseMemorized, bookReportDone, previewDone, sermonWatched, assignmentMemo } = body
 
-  await db.insert(weeklyTasks).values({ userId, weekNumber, verseMemorized, bookReportDone, previewDone, sermonWatched })
+  await db.insert(weeklyTasks).values({ userId, weekNumber, verseMemorized, bookReportDone, previewDone, sermonWatched, assignmentMemo })
     .onConflictDoUpdate({
       target: [weeklyTasks.userId, weeklyTasks.weekNumber],
-      set: { verseMemorized, bookReportDone, previewDone, sermonWatched, updatedAt: sql`(datetime('now'))` },
+      set: { verseMemorized, bookReportDone, previewDone, sermonWatched, assignmentMemo, updatedAt: sql`(datetime('now'))` },
     })
   return c.json({ ok: true })
 })

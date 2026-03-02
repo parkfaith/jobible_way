@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
 import { api } from '../lib/api'
 import { BIBLE_READING } from '../lib/bible-reading'
 import { REQUIRED_BOOKS } from '../lib/required-books'
+import { ASSIGNMENTS } from '../lib/assignments'
 
 interface CurriculumItem {
   weekNumber: number
@@ -21,6 +22,7 @@ interface WeeklyData {
   bookReportDone: number
   previewDone: number
   sermonWatched: number
+  assignmentMemo: string | null
 }
 
 export default function WeekDetailPage() {
@@ -28,18 +30,45 @@ export default function WeekDetailPage() {
   const navigate = useNavigate()
   const weekNumber = parseInt(weekId ?? '1')
   const [curr, setCurr] = useState<CurriculumItem | null>(null)
-  const [weekly, setWeekly] = useState<WeeklyData>({ verseMemorized: 0, bookReportDone: 0, previewDone: 0, sermonWatched: 0 })
+  const [weekly, setWeekly] = useState<WeeklyData>({ verseMemorized: 0, bookReportDone: 0, previewDone: 0, sermonWatched: 0, assignmentMemo: null })
+  const [memo, setMemo] = useState('')
   const [loading, setLoading] = useState(true)
+  const memoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingMemo = useRef<string | null>(null)
 
   useEffect(() => {
     Promise.all([
       api.get(`/api/curriculum/${weekNumber}`),
       api.get(`/api/weekly/${weekNumber}`),
     ])
-      .then(([c, w]) => { setCurr(c); setWeekly(w) })
+      .then(([c, w]) => { setCurr(c); setWeekly(w); setMemo(w.assignmentMemo ?? '') })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [weekNumber])
+
+  // 메모 언마운트 시 대기 중인 저장 즉시 실행
+  useEffect(() => {
+    return () => {
+      if (memoTimer.current) clearTimeout(memoTimer.current)
+      if (pendingMemo.current !== null) saveMemo(pendingMemo.current)
+    }
+  }, [])
+
+  function handleMemoChange(value: string) {
+    setMemo(value)
+    pendingMemo.current = value
+    if (memoTimer.current) clearTimeout(memoTimer.current)
+    memoTimer.current = setTimeout(() => {
+      pendingMemo.current = null
+      saveMemo(value)
+    }, 1500)
+  }
+
+  async function saveMemo(value: string) {
+    try {
+      await api.put(`/api/weekly/${weekNumber}`, { ...weekly, assignmentMemo: value || null })
+    } catch { /* 실패 시 무음 */ }
+  }
 
   async function toggleWeekly(field: keyof WeeklyData) {
     const previous = weekly
@@ -168,6 +197,38 @@ export default function WeekDetailPage() {
             </button>
           ))}
         </div>
+
+        {/* 과제물 */}
+        {ASSIGNMENTS[weekNumber] && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-[var(--color-primary)] font-[var(--font-ui)]">과제물</h3>
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
+              {ASSIGNMENTS[weekNumber].map((item, i) => (
+                <div key={i} className={i > 0 ? 'pt-3 border-t border-[var(--color-border)]' : ''}>
+                  <span className="text-xs font-medium text-[var(--color-secondary)] font-[var(--font-ui)]">
+                    {item.category}
+                  </span>
+                  <p className="text-sm text-[var(--color-text-primary)] mt-1 whitespace-pre-line">
+                    {item.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {/* 메모 (손글씨 등 추가 기록) */}
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+                메모 (추가 기록)
+              </label>
+              <textarea
+                value={memo}
+                onChange={(e) => handleMemoChange(e.target.value)}
+                placeholder="손글씨 내용이나 추가 메모를 입력하세요..."
+                rows={3}
+                className="w-full mt-2 p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/50 focus:outline-none focus:border-[var(--color-secondary)] resize-none"
+              />
+            </div>
+          </div>
+        )}
 
         {/* 주간 체크 */}
         <div className="space-y-2">

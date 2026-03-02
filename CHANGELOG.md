@@ -5,6 +5,23 @@
 
 ---
 
+## [0.9.1] — 2026-03-02
+> 주차별 과제물 확인 + 메모 기능
+
+### 추가
+- **과제물 확인 섹션**: 주차 상세 페이지에서 해당 주차의 과제물(교재예습, 기도, QT, 성구암송 등) 내용 확인 가능
+- **과제물 메모**: textarea로 손글씨 내용이나 추가 기록 입력/저장 (1.5초 디바운스 자동저장)
+- **과제물 상수 파일**: `frontend/src/lib/assignments.ts` — 주차별 과제물 데이터 (사진 제공 시 추가)
+- **DB 컬럼 추가**: `weekly_tasks.assignment_memo` (text)
+
+### 수정 파일
+- `frontend/src/lib/assignments.ts` — 신규, 주차별 과제물 상수
+- `frontend/src/pages/WeekDetailPage.tsx` — 과제물 섹션 UI + 메모 자동저장
+- `backend/src/db/schema.ts` — `assignmentMemo` 컬럼 추가
+- `backend/src/routes/weekly.ts` — GET/PUT에 `assignmentMemo` 필드 포함
+
+---
+
 ## [0.9.0] — 2026-03-02
 > 대시보드 주간체크 현황 + 주차별 완료율 + 미완료 항목 강조
 
