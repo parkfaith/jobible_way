@@ -29,7 +29,7 @@ export default function WeeksPage() {
   const [loading, setLoading] = useState(true)
 
   // 현재 주차 자동 계산
-  const week1 = new Date('2026-03-01T00:00:00+09:00')
+  const week1 = new Date('2026-02-22T00:00:00+09:00')
   const now = new Date()
   const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
   const currentWeek = Math.max(1, Math.min(32, diff + 1))

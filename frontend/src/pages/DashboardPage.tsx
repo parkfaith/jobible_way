@@ -44,8 +44,8 @@ export default function DashboardPage() {
 
   async function loadData() {
     try {
-      // 1주차 시작일(2026-03-01) 기준 현재 주차 자동 계산
-      const week1 = new Date('2026-03-01T00:00:00+09:00')
+      // 1주차 시작일(2026-02-22) 기준 현재 주차 자동 계산
+      const week1 = new Date('2026-02-22T00:00:00+09:00')
       const now = new Date()
       const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
       const week = Math.max(1, Math.min(32, diff + 1))

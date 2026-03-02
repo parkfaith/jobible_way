@@ -10,8 +10,8 @@ const PLAYLISTS = {
 
 // 제자훈련 1주차 시작일 (일요일) — UTC 기반 문자열 연산으로 시간대 무관하게 처리
 const WEEK1_YEAR = 2026
-const WEEK1_MONTH = 3
-const WEEK1_DAY = 1
+const WEEK1_MONTH = 2
+const WEEK1_DAY = 22
 
 export const sermonRoute = new Hono<AppEnv>()
 
