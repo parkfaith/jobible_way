@@ -14,14 +14,8 @@ interface UserInfo {
 // UTC datetime 문자열을 KST 표시용으로 변환
 function formatKST(utcStr: string | null): string {
   if (!utcStr) return '-'
-  const d = new Date(utcStr + 'Z')
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  const h = String(d.getHours()).padStart(2, '0')
-  const min = String(d.getMinutes()).padStart(2, '0')
   // KST = UTC + 9
-  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
+  const kst = new Date(new Date(utcStr + 'Z').getTime() + 9 * 60 * 60 * 1000)
   return `${kst.getFullYear()}.${String(kst.getMonth() + 1).padStart(2, '0')}.${String(kst.getDate()).padStart(2, '0')} ${String(kst.getHours()).padStart(2, '0')}:${String(kst.getMinutes()).padStart(2, '0')}`
 }
 
