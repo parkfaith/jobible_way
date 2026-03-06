@@ -4,6 +4,7 @@ import AppShell from '../components/layout/AppShell'
 import TabNav from '../components/ui/TabNav'
 import { api } from '../lib/api'
 import { useToast } from '../components/ui/Toast'
+import SermonSummary from '../components/SermonSummary'
 
 interface SermonVideo {
   videoId: string
@@ -178,6 +179,9 @@ export default function SermonPage() {
                     </div>
                   </button>
                 )}
+
+                {/* AI 요약 */}
+                <SermonSummary videoId={sermon.videoId} />
               </div>
             ))}
           </div>

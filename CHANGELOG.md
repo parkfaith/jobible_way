@@ -5,6 +5,47 @@
 
 ---
 
+## [0.9.8] — 2026-03-06
+> 설교 영상 AI 요약 기능 추가 (Gemini API)
+
+### 추가
+- **AI 설교 요약**: 설교보기 페이지에서 YouTube 설교 영상을 Gemini API(`gemini-3-flash-preview`)로 분석하여 한국어 요약 자동 생성
+- **자동 요약 생성**: 설교 페이지 진입 시 요약이 없는 영상은 자동으로 Gemini API 호출하여 DB에 저장 (버튼 클릭 불필요)
+- **공유 캐싱**: videoId당 최초 1회만 Gemini API 호출, 이후 DB에서 즉시 반환 (모든 사용자 공유)
+- **자막 없는 영상 처리**: YouTube Captions API로 자막 존재 여부 확인, 자막 없는 영상은 요약 UI 숨김
+- **SSE 스트리밍**: Gemini API를 SSE 스트리밍 방식으로 호출하여 긴 설교 영상(30분+)도 타임아웃 없이 처리
+- **요약 구조**: 핵심 메시지, 주요 포인트, 성경 해석, 삶의 적용 4개 섹션
+- **DB 테이블**: `sermon_summaries` 테이블 신규 (videoId 유니크, 공유 테이블)
+- **API 엔드포인트**: `GET/POST /api/summaries/:videoId` — 요약 조회/생성
+- **SermonSummary 컴포넌트**: 접기/펼치기 UI, 로딩 스피너, 마크다운 렌더링
+
+### 신규 파일
+- `backend/src/lib/gemini.ts` — Gemini API fetch 클라이언트
+- `backend/src/routes/summary.ts` — 요약 조회/생성 라우트
+- `frontend/src/components/SermonSummary.tsx` — AI 요약 표시 컴포넌트
+- `backend/drizzle/migrations/0007_left_liz_osborn.sql` — sermon_summaries 마이그레이션
+
+### 보안 개선
+- **videoId 입력 검증 강화**: YouTube 표준 형식(11자, `[a-zA-Z0-9_-]`) 정규식 검증 적용
+- **에러 로그 민감 정보 제한**: Gemini/YouTube API 에러 응답 로그를 200자로 잘라 전문 노출 방지
+- **useEffect 의존성 수정**: SermonSummary 컴포넌트의 React hooks 규칙 준수
+- **테스트 파일 정리**: 개발 중 생성된 `test-caption.mjs` 삭제
+
+### 수정 파일
+- `backend/src/db/schema.ts` — sermonSummaries 테이블 추가
+- `backend/src/env.ts` — GEMINI_API_KEY 환경변수 타입 추가
+- `backend/src/index.ts` — summaryRoute 마운팅
+- `backend/src/lib/gemini.ts` — 에러 로그 민감 정보 제한
+- `backend/src/routes/summary.ts` — videoId 정규식 검증 강화
+- `backend/src/routes/sermon.ts` — 에러 로그 민감 정보 제한
+- `frontend/src/pages/SermonPage.tsx` — SermonSummary 컴포넌트 삽입
+- `frontend/src/components/SermonSummary.tsx` — 자동 요약 생성, useEffect 의존성 수정
+
+### 삭제 파일
+- `backend/test-caption.mjs` — YouTube 자막 추출 테스트 스크립트 (개발용)
+
+---
+
 ## [0.9.7] — 2026-03-02
 > Google 로그인 popup 우선 전략으로 복구
 

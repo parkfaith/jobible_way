@@ -5,6 +5,7 @@ export type Env = {
   TURSO_AUTH_TOKEN: string
   FIREBASE_PROJECT_ID: string
   YOUTUBE_API_KEY: string
+  GEMINI_API_KEY: string
   ALLOWED_ORIGINS?: string
   NODE_ENV?: string
 }

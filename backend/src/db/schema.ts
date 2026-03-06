@@ -79,6 +79,15 @@ export const weeklyTasks = sqliteTable('weekly_tasks', {
   primaryKey({ columns: [t.userId, t.weekNumber] }),
 ])
 
+// AI 설교 요약 — 공유 테이블 (videoId당 1개, 모든 사용자 공유)
+export const sermonSummaries = sqliteTable('sermon_summaries', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  videoId: text('video_id').notNull().unique(),
+  summary: text('summary').notNull(),
+  model: text('model').notNull(),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
+})
+
 export const dailyChecks = sqliteTable('daily_checks', {
   userId: text('user_id').notNull().references(() => users.id),
   date: text('date').notNull(),

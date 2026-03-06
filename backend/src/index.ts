@@ -11,6 +11,7 @@ import { diaryRoute } from './routes/diary'
 import { usersRoute } from './routes/users'
 import { progressRoute } from './routes/progress'
 import { adminRoute } from './routes/admin'
+import { summaryRoute } from './routes/summary'
 import { createDb } from './db/index'
 import type { AppEnv } from './types'
 
@@ -63,6 +64,9 @@ app.route('/api/weeks', weeksApi)
 
 // OIA 개별 수정/삭제: /api/oia/:id (별도 라우트 인스턴스)
 app.route('/api/oia', oiaItemRoute)
+
+// AI 설교 요약 API
+app.route('/api/summaries', summaryRoute)
 
 // 진도 현황 API
 app.route('/api/progress', progressRoute)

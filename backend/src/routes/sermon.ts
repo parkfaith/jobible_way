@@ -45,7 +45,7 @@ sermonRoute.get('/:service', requireAuth, async (c) => {
     const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`)
     if (!res.ok) {
       const text = await res.text()
-      console.error('YouTube API 오류:', res.status, text)
+      console.error('YouTube API 오류:', res.status, text.substring(0, 200))
       return c.json({ error: 'YouTube API 오류' }, 502)
     }
 
