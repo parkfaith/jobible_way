@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { api } from '../lib/api'
 import { useToast } from './ui/Toast'
 
@@ -115,24 +115,83 @@ export default function SermonSummary({ videoId }: Props) {
   )
 }
 
+/** 인라인 마크다운 처리 (**bold**, *italic*) */
+function renderInline(text: string) {
+  // **bold** → <strong>, *italic* → <em>
+  const parts: (string | React.ReactElement)[] = []
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+    if (match[2]) {
+      // **bold**
+      parts.push(<strong key={match.index} className="font-semibold">{match[2]}</strong>)
+    } else if (match[3]) {
+      // *italic*
+      parts.push(<em key={match.index}>{match[3]}</em>)
+    }
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
+
 function renderMarkdown(text: string) {
   return text.split('\n').map((line, i) => {
+    // ### h3 헤더
+    if (line.startsWith('### ')) {
+      return (
+        <h4 key={i} className="text-[var(--color-accent)] font-semibold mt-2 mb-0.5">
+          {renderInline(line.slice(4))}
+        </h4>
+      )
+    }
+    // ## h2 헤더
     if (line.startsWith('## ')) {
       return (
         <h3 key={i} className="text-[var(--color-secondary)] font-semibold mt-3 mb-1 first:mt-0">
-          {line.replace('## ', '')}
+          {renderInline(line.slice(3))}
         </h3>
       )
     }
-    if (line.startsWith('- ')) {
+    // # h1 헤더
+    if (line.startsWith('# ')) {
+      return (
+        <h3 key={i} className="text-[var(--color-secondary)] font-bold mt-3 mb-1 first:mt-0">
+          {renderInline(line.slice(2))}
+        </h3>
+      )
+    }
+    // - 또는 * 불릿 리스트
+    const bulletMatch = line.match(/^(\s*)[-*]\s+(.*)/)
+    if (bulletMatch) {
+      const indent = bulletMatch[1].length > 0 ? 'pl-6' : 'pl-3'
+      return (
+        <p key={i} className={`${indent} my-0.5`}>
+          <span className="text-[var(--color-accent)] mr-2">•</span>
+          {renderInline(bulletMatch[2])}
+        </p>
+      )
+    }
+    // 숫자 리스트 (1. 2. 3.)
+    const numMatch = line.match(/^(\d+)[.)]\s+(.*)/)
+    if (numMatch) {
       return (
         <p key={i} className="pl-3 my-0.5">
-          <span className="text-[var(--color-accent)] mr-2">•</span>
-          {line.replace('- ', '')}
+          <span className="text-[var(--color-accent)] mr-2 font-medium">{numMatch[1]}.</span>
+          {renderInline(numMatch[2])}
         </p>
       )
     }
     if (line.trim() === '') return <div key={i} className="h-2" />
-    return <p key={i} className="my-0.5">{line}</p>
+    return <p key={i} className="my-0.5">{renderInline(line)}</p>
   })
 }
