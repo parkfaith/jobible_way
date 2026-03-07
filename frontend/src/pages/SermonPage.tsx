@@ -20,15 +20,29 @@ interface WeeklyData {
   sermonWatched: number  // 비트마스크: sunday=1, friday=2, 둘 다=3
 }
 
-const SERVICES = [
-  { label: '주일 예배', value: 'sunday' },
-  { label: '금요 예배', value: 'friday' },
-]
+// 주차별 일요일/금요일 날짜 계산 (백엔드 getWeekDates와 동일 로직)
+function getWeekDates(weekNumber: number) {
+  const start = new Date(Date.UTC(2026, 2, 22)) // 2026-03-22 일요일
+  start.setUTCDate(start.getUTCDate() + (weekNumber - 1) * 7)
+  const friday = new Date(start)
+  friday.setUTCDate(friday.getUTCDate() + 5)
+
+  const format = (d: Date) =>
+    `${d.getUTCMonth() + 1}/${d.getUTCDate()}`
+
+  return { sundayLabel: format(start), fridayLabel: format(friday) }
+}
 
 export default function SermonPage() {
   const { weekId } = useParams()
   const { showToast } = useToast()
   const weekNumber = parseInt(weekId ?? '1')
+
+  const { sundayLabel, fridayLabel } = getWeekDates(weekNumber)
+  const SERVICES = [
+    { label: `주일 예배 (${sundayLabel})`, value: 'sunday' },
+    { label: `금요 예배 (${fridayLabel})`, value: 'friday' },
+  ]
   const [service, setService] = useState('sunday')
   const [sermons, setSermons] = useState<SermonVideo[]>([])
   const [weekly, setWeekly] = useState<WeeklyData>({ sermonWatched: 0 })
