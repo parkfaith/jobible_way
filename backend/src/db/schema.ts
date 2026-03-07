@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, primaryKey, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 export const users = sqliteTable('users', {
@@ -41,20 +41,6 @@ export const sermonNotes = sqliteTable('sermon_notes', {
   uniqueIndex('idx_sermon_user_week_service').on(t.userId, t.weekNumber, t.service),
 ])
 
-export const oiaNotes = sqliteTable('oia_notes', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().references(() => users.id),
-  weekNumber: integer('week_number').notNull(),
-  date: text('date').notNull(),
-  scripture: text('scripture'),
-  observation: text('observation'),
-  interpretation: text('interpretation'),
-  application: text('application'),
-  createdAt: text('created_at').default(sql`(datetime('now'))`),
-  updatedAt: text('updated_at').default(sql`(datetime('now'))`),
-}, (t) => [
-  index('idx_oia_user_week').on(t.userId, t.weekNumber),
-])
 
 export const diaryEntries = sqliteTable('diary_entries', {
   id: integer('id').primaryKey({ autoIncrement: true }),

@@ -5,6 +5,47 @@
 
 ---
 
+## [0.10.1] — 2026-03-08
+> 제자동역자 기도제목 페이지 추가
+
+### 추가
+- **제자동역자 페이지**: 함께 하는 8명의 동역자 명단과 기도제목을 아코디온 형식으로 표시
+- 가나다 순 정렬: 노재진, 박은성, 박준형, 안기준, 이경현, 이규용, 이민성, 황영학
+- 기도제목 미등록 시 "아직 기도제목이 없습니다." 안내 표시
+- WeekDetailPage 기록 메뉴, DashboardPage 빠른 메뉴에 제자동역자 바로가기 추가
+
+### 수정 파일
+- `frontend/src/pages/FellowPage.tsx` — 신규 생성
+- `frontend/src/router/index.tsx` — `/fellow` 라우트 추가
+- `frontend/src/pages/WeekDetailPage.tsx` — 기록 메뉴에 제자동역자 추가
+- `frontend/src/pages/DashboardPage.tsx` — 빠른 메뉴에 제자동역자 추가
+
+---
+
+## [0.10.0] — 2026-03-08
+> OIA 묵상 기능 삭제 — 사용 데이터 0건으로 불필요 기능 정리
+
+### 삭제
+- **OIA 묵상 기능 전체 제거**: 백엔드 라우트, DB 스키마, 프론트엔드 페이지 및 모든 UI 참조 삭제
+  - 데이터 확인 결과 oia_notes 테이블 0건으로 안전하게 삭제
+- **백엔드**: `backend/src/routes/oia.ts` 삭제, `backend/src/index.ts`에서 OIA 라우트 마운트 제거
+- **DB 스키마**: `oiaNotes` 테이블 정의 제거 (`backend/src/db/schema.ts`)
+- **프론트엔드**: `OiaPage.tsx` 삭제, 라우터에서 OIA 경로 제거
+- **UI 참조 제거**: WeekDetailPage 노트 메뉴, DashboardPage 빠른 메뉴, OnboardingPage 소개 문구에서 OIA 관련 내용 삭제
+
+### 수정 파일
+- `backend/src/index.ts` — OIA 라우트 import/마운트 제거
+- `backend/src/db/schema.ts` — oiaNotes 테이블 정의 제거
+- `backend/src/routes/oia.ts` — 파일 삭제
+- `frontend/src/pages/OiaPage.tsx` — 파일 삭제
+- `frontend/src/router/index.tsx` — OIA 라우트 제거
+- `frontend/src/pages/WeekDetailPage.tsx` — OIA 묵상 메뉴 제거
+- `frontend/src/pages/DashboardPage.tsx` — OIA 묵상 빠른 메뉴 제거
+- `frontend/src/pages/OnboardingPage.tsx` — 소개 문구 수정
+- `CLAUDE.md` — OIA 관련 문서 정리
+
+---
+
 ## [0.9.9] — 2026-03-07
 > 설교 영상 YouTube API 메모리 캐싱 추가
 

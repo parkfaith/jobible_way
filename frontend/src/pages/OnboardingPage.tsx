@@ -28,7 +28,7 @@ export default function OnboardingPage() {
       </p>
       <p className="text-sm text-[var(--color-text-secondary)] mb-12 max-w-xs leading-relaxed relative z-10">
         32주 제자훈련의 모든 기록을 한 곳에.<br />
-        설교 노트, OIA 묵상, 성구 암송, 일일 체크까지.
+        설교 노트, 신앙 일기, 성구 암송, 일일 체크까지.
       </p>
 
       {/* CTA */}

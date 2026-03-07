@@ -43,7 +43,8 @@ const DailyPage = lazyWithRetry(() => import('../pages/DailyPage'))
 const ProgressPage = lazyWithRetry(() => import('../pages/ProgressPage'))
 const ProfilePage = lazyWithRetry(() => import('../pages/ProfilePage'))
 const SermonPage = lazyWithRetry(() => import('../pages/SermonPage'))
-const OiaPage = lazyWithRetry(() => import('../pages/OiaPage'))
+
+const FellowPage = lazyWithRetry(() => import('../pages/FellowPage'))
 const DiaryPage = lazyWithRetry(() => import('../pages/DiaryPage'))
 const VersePage = lazyWithRetry(() => import('../pages/VersePage'))
 const CurriculumPage = lazyWithRetry(() => import('../pages/CurriculumPage'))
@@ -171,7 +172,8 @@ export const router = createBrowserRouter([
       { path: '/weeks', element: <WeeksPage /> },
       { path: '/weeks/:weekId', element: <WeekDetailPage /> },
       { path: '/weeks/:weekId/sermon', element: <SermonPage /> },
-      { path: '/weeks/:weekId/oia', element: <OiaPage /> },
+
+      { path: '/fellow', element: <FellowPage /> },
       { path: '/weeks/:weekId/diary', element: <DiaryPage /> },
       { path: '/weeks/:weekId/verse', element: <VersePage /> },
       { path: '/daily', element: <DailyPage /> },

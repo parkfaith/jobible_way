@@ -6,7 +6,7 @@ import { curriculumRoute } from './routes/curriculum'
 import { dailyRoute } from './routes/daily'
 import { weeklyRoute } from './routes/weekly'
 import { sermonRoute } from './routes/sermon'
-import { oiaRoute, oiaItemRoute } from './routes/oia'
+
 import { diaryRoute } from './routes/diary'
 import { usersRoute } from './routes/users'
 import { progressRoute } from './routes/progress'
@@ -55,15 +55,11 @@ app.route('/api/daily', dailyRoute)
 app.route('/api/weekly', weeklyRoute)
 app.route('/api/me', usersRoute)
 
-// 중첩 라우트: /api/weeks/:weekNumber/sermon, /api/weeks/:weekNumber/oia, /api/weeks/:weekNumber/diary
+// 중첩 라우트: /api/weeks/:weekNumber/sermon, /api/weeks/:weekNumber/diary
 const weeksApi = new Hono<AppEnv>()
 weeksApi.route('/:weekNumber/sermon', sermonRoute)
-weeksApi.route('/:weekNumber/oia', oiaRoute)
 weeksApi.route('/:weekNumber/diary', diaryRoute)
 app.route('/api/weeks', weeksApi)
-
-// OIA 개별 수정/삭제: /api/oia/:id (별도 라우트 인스턴스)
-app.route('/api/oia', oiaItemRoute)
 
 // AI 설교 요약 API
 app.route('/api/summaries', summaryRoute)

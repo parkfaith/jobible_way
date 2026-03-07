@@ -57,6 +57,13 @@
       "when": 1772800103492,
       "tag": "0007_left_liz_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1772897178411,
+      "tag": "0008_panoramic_stephen_strange",
+      "breakpoints": true
     }
   ]
 }

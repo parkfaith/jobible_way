@@ -43,13 +43,12 @@ cd frontend && npx tsc --noEmit && npx vite build
 라우트는 `backend/src/routes/`에 모듈별로 분리. 모든 사용자 관련 라우트는 `requireAuth` 미들웨어를 사용하여 Firebase 토큰에서 `userId`를 추출해 Hono 컨텍스트에 저장.
 
 주요 라우트 패턴:
-- `/api/weeks/:weekNumber/{sermon|oia|diary}` — 주차별 콘텐츠
+- `/api/weeks/:weekNumber/{sermon|diary}` — 주차별 콘텐츠
 - `/api/weeks/:weekNumber/sermons` — YouTube 플레이리스트에서 해당 주차 설교 영상 조회
-- `/api/oia/:id` — OIA 항목 수정/삭제용 별도 라우터 인스턴스 (userId로 소유권 확인)
 - `/api/daily`, `/api/weekly/:weekNumber` — `onConflictDoUpdate` 기반 upsert
 - `/api/progress/{heatmap|streak|volumes}` — 읽기 전용 집계 쿼리
 
-중첩 라우팅: `backend/src/index.ts`에서 `weeksApi` Hono 인스턴스를 생성하여 `/api/weeks`에 마운트, 하위에 `:weekNumber/sermon`, `:weekNumber/oia`, `:weekNumber/diary`를 서브 라우트로 연결.
+중첩 라우팅: `backend/src/index.ts`에서 `weeksApi` Hono 인스턴스를 생성하여 `/api/weeks`에 마운트, 하위에 `:weekNumber/sermon`, `:weekNumber/diary`를 서브 라우트로 연결.
 
 ### 프론트엔드 구조
 - **진입점**: `main.tsx` → ErrorBoundary → AuthProvider → ToastProvider → RouterProvider
@@ -59,15 +58,13 @@ cd frontend && npx tsc --noEmit && npx vite build
 - **레이아웃**: `AppShell` (고정 헤더 + 콘텐츠 + BottomNav)이 모든 보호 페이지를 감쌈
 
 ### 데이터 패턴
-- **자동 저장(Auto-save)**: SermonPage, OiaPage, DiaryPage에서 `useRef` 타이머로 1.5초 디바운스 저장. 성공 시 무음, 실패 시에만 토스트 표시.
+- **자동 저장(Auto-save)**: SermonPage, DiaryPage에서 `useRef` 타이머로 1.5초 디바운스 저장. 성공 시 무음, 실패 시에만 토스트 표시.
 - **낙관적 업데이트(Optimistic Update)**: DailyPage, WeekDetailPage에서 상태를 즉시 변경 후 API 실패 시 롤백.
-- **OIA 경합 방지(Race Condition Guard)**: `saving` ref로 새 노트 생성 시 중복 POST 방지.
 
-### 데이터베이스 스키마 (7 테이블)
+### 데이터베이스 스키마 (6 테이블)
 - `users` — PK는 Firebase UID (text)
 - `curriculum` — 32주 정적 데이터 (시드), weekNumber에 유니크 제약
 - `sermonNotes` — (userId, weekNumber, service)에 유니크
-- `oiaNotes` — (userId, weekNumber)에 인덱스, 주차당 복수 허용
 - `diaryEntries` — (userId, weekNumber)에 유니크
 - `weeklyTasks` — 복합 PK (userId, weekNumber)
 - `dailyChecks` — 복합 PK (userId, date)
