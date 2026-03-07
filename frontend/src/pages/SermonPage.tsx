@@ -22,7 +22,7 @@ interface WeeklyData {
 
 // 주차별 일요일/금요일 날짜 계산 (백엔드 getWeekDates와 동일 로직)
 function getWeekDates(weekNumber: number) {
-  const start = new Date(Date.UTC(2026, 2, 22)) // 2026-03-22 일요일
+  const start = new Date(Date.UTC(2026, 1, 22)) // 2026-02-22 일요일 (month는 0-based)
   start.setUTCDate(start.getUTCDate() + (weekNumber - 1) * 7)
   const friday = new Date(start)
   friday.setUTCDate(friday.getUTCDate() + 5)
