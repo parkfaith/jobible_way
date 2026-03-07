@@ -13,6 +13,20 @@ const WEEK1_YEAR = 2026
 const WEEK1_MONTH = 2
 const WEEK1_DAY = 22
 
+// 메모리 캐시 — 같은 주차/서비스 조합의 YouTube API 응답을 1시간 캐싱
+const CACHE_TTL = 60 * 60 * 1000 // 1시간 (ms)
+const cache = new Map<string, { data: SermonVideo[]; expiresAt: number }>()
+
+interface SermonVideo {
+  videoId: string
+  title: string
+  date: string
+  preacher: string
+  scripture: string
+  service: string
+  thumbnail: string
+}
+
 export const sermonRoute = new Hono<AppEnv>()
 
 // GET /api/weeks/:weekNumber/sermon/:service — 플레이리스트에서 해당 주차 설교 영상 조회
@@ -24,6 +38,13 @@ sermonRoute.get('/:service', requireAuth, async (c) => {
   const service = c.req.param('service') as 'sunday' | 'friday'
   if (!['sunday', 'friday'].includes(service)) {
     return c.json({ error: 'Invalid service type' }, 400)
+  }
+
+  // 캐시 확인
+  const cacheKey = `${weekNumber}:${service}`
+  const cached = cache.get(cacheKey)
+  if (cached && Date.now() < cached.expiresAt) {
+    return c.json(cached.data)
   }
 
   const apiKey = c.env.YOUTUBE_API_KEY
@@ -80,6 +101,9 @@ sermonRoute.get('/:service', requireAuth, async (c) => {
         }
       })
       .filter((s): s is NonNullable<typeof s> => s !== null && s.date === targetDate)
+
+    // 캐시 저장
+    cache.set(cacheKey, { data: sermons, expiresAt: Date.now() + CACHE_TTL })
 
     return c.json(sermons)
   } catch (err) {
