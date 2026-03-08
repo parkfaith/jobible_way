@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `can_view_fellow` integer DEFAULT 0;

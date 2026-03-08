@@ -4,21 +4,27 @@ import { auth } from './firebase'
 import { api } from './api'
 import { today } from './date'
 
+// 슈퍼관리자 — 모든 권한 보유
+const SUPER_ADMIN_EMAIL = 'parkfaith75@gmail.com'
+
 interface AuthContextType {
   user: User | null
   loading: boolean
+  canViewFellow: boolean
   signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  canViewFellow: false,
   signOut: async () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [canViewFellow, setCanViewFellow] = useState(false)
 
   useEffect(() => {
     // signInWithRedirect 후 돌아온 경우 결과 처리
@@ -37,6 +43,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch {
           // 유저 등록 실패해도 앱은 동작하도록
         }
+        // 슈퍼관리자는 모든 권한 자동 부여, 일반 사용자는 DB 조회
+        if (firebaseUser.email === SUPER_ADMIN_EMAIL) {
+          setCanViewFellow(true)
+        } else {
+          try {
+            const me = await api.get('/api/me')
+            setCanViewFellow(!!me.canViewFellow)
+          } catch {
+            // 권한 조회 실패 시 기본값 유지
+          }
+        }
+      } else {
+        setCanViewFellow(false)
       }
       setLoading(false)
     })
@@ -46,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = () => firebaseSignOut(auth)
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, canViewFellow, signOut }}>
       {children}
     </AuthContext.Provider>
   )

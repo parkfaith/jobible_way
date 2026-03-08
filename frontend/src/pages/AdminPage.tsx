@@ -7,6 +7,7 @@ interface UserInfo {
   id: string
   name: string
   email: string
+  canViewFellow: number | null
   lastLoginAt: string | null
   createdAt: string | null
 }
@@ -23,6 +24,7 @@ export default function AdminPage() {
   const [userList, setUserList] = useState<UserInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     api.get('/api/admin/users')
@@ -92,6 +94,40 @@ export default function AdminPage() {
                     </p>
                   </div>
 
+                  {/* 제자동역자 열람 권한 */}
+                  <label
+                    className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="text-[10px] text-[var(--color-text-secondary)] leading-tight">동역자</span>
+                    <input
+                      type="checkbox"
+                      checked={!!u.canViewFellow}
+                      onChange={async () => {
+                        const next = !u.canViewFellow
+                        // 낙관적 업데이트
+                        setUserList((prev) =>
+                          prev.map((item) =>
+                            item.id === u.id ? { ...item, canViewFellow: next ? 1 : 0 } : item
+                          )
+                        )
+                        try {
+                          await api.patch(`/api/admin/users/${u.id}/fellow`, { canViewFellow: next })
+                          setToast(`${u.name || '사용자'}님의 권한이 변경되었습니다. 해당 사용자가 재로그인하면 적용됩니다.`)
+                          setTimeout(() => setToast(''), 4000)
+                        } catch {
+                          // 실패 시 롤백
+                          setUserList((prev) =>
+                            prev.map((item) =>
+                              item.id === u.id ? { ...item, canViewFellow: next ? 0 : 1 } : item
+                            )
+                          )
+                        }
+                      }}
+                      className="w-4 h-4 accent-[var(--color-secondary)] cursor-pointer"
+                    />
+                  </label>
+
                   {/* 최종 로그인 */}
                   <div className="text-right shrink-0">
                     <p className="text-[10px] text-[var(--color-text-secondary)] leading-tight">최종 로그인</p>
@@ -105,6 +141,15 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* 권한 변경 안내 토스트 */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 max-w-[90vw]">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-secondary)]/30 rounded-xl px-4 py-3 shadow-lg">
+            <p className="text-xs text-[var(--color-text-primary)] text-center leading-relaxed">{toast}</p>
+          </div>
+        </div>
+      )}
     </AppShell>
   )
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
+import { useAuth } from '../lib/AuthContext'
 
 interface Fellow {
   name: string
@@ -20,7 +22,11 @@ const FELLOWS: Fellow[] = [
 ]
 
 export default function FellowPage() {
+  const { canViewFellow } = useAuth()
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  // 권한 없으면 홈으로 리다이렉트
+  if (!canViewFellow) return <Navigate to="/home" replace />
 
   function toggle(index: number) {
     setOpenIndex(openIndex === index ? null : index)

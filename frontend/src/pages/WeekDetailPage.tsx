@@ -101,14 +101,6 @@ export default function WeekDetailPage() {
     },
 
     {
-      label: '제자동역자', desc: '동역자 기도제목', path: '/fellow',
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-        </svg>
-      ),
-    },
-    {
       label: '신앙 일기', desc: '이번 주 신앙 성찰', path: `/weeks/${weekNumber}/diary`,
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

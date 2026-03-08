@@ -27,8 +27,20 @@ adminRoute.get('/users', async (c) => {
     id: users.id,
     name: users.name,
     email: users.email,
+    canViewFellow: users.canViewFellow,
     lastLoginAt: users.lastLoginAt,
     createdAt: users.createdAt,
   }).from(users).orderBy(desc(users.lastLoginAt))
   return c.json(allUsers)
+})
+
+// PATCH /api/admin/users/:userId/fellow — 제자동역자 열람 권한 토글
+adminRoute.patch('/users/:userId/fellow', async (c) => {
+  const db = c.get('db')
+  const targetId = c.req.param('userId')
+  const body = await c.req.json<{ canViewFellow: boolean }>()
+  await db.update(users)
+    .set({ canViewFellow: body.canViewFellow ? 1 : 0 })
+    .where(eq(users.id, targetId))
+  return c.json({ ok: true })
 })
