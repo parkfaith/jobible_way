@@ -252,54 +252,56 @@ export default function DashboardPage() {
         })()}
 
         {/* 빠른 메뉴 */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
+        {(() => {
+          const menus = [
             {
-              label: '설교 보기', path: `/weeks/${currentWeek}/sermon`,
+              label: '설교보기', path: `/weeks/${currentWeek}/sermon`,
               icon: (
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
               ),
             },
-
             ...(canViewFellow ? [{
-              label: '제자동역자', path: '/fellow',
+              label: '동역자', path: '/fellow',
               icon: (
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
                 </svg>
               ),
             }] : []),
             {
-              label: '신앙 일기', path: `/weeks/${currentWeek}/diary`,
+              label: '신앙일기', path: `/weeks/${currentWeek}/diary`,
               icon: (
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
                 </svg>
               ),
             },
             {
-              label: '성구 암송', path: `/weeks/${currentWeek}/verse`,
+              label: '성구암송', path: `/weeks/${currentWeek}/verse`,
               icon: (
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
                 </svg>
               ),
             },
-          ].map((menu) => (
-            <button
-              key={menu.path}
-              onClick={() => navigate(menu.path)}
-              className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 text-left cursor-pointer transition-shadow hover:shadow-md"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[var(--color-secondary)]/15 flex items-center justify-center text-[var(--color-secondary)]">
-                {menu.icon}
-              </div>
-              <p className="text-sm font-medium text-[var(--color-primary)] mt-2 font-[var(--font-ui)]">{menu.label}</p>
-            </button>
-          ))}
-        </div>
+          ]
+          return (
+            <div className="flex gap-2">
+              {menus.map((menu) => (
+                <button
+                  key={menu.path}
+                  onClick={() => navigate(menu.path)}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg py-2.5 px-2 cursor-pointer transition-shadow hover:shadow-md"
+                >
+                  <span className="text-[var(--color-secondary)]">{menu.icon}</span>
+                  <span className="text-xs font-medium text-[var(--color-primary)] font-[var(--font-ui)] whitespace-nowrap">{menu.label}</span>
+                </button>
+              ))}
+            </div>
+          )
+        })()}
 
         {/* 홈 화면에 추가 배너 */}
         {showBanner && (
