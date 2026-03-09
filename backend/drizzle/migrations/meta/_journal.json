@@ -71,6 +71,20 @@
       "when": 1772949306732,
       "tag": "0009_workable_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1773063150306,
+      "tag": "0010_windy_toad_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1773063967709,
+      "tag": "0011_hard_diamondback",
+      "breakpoints": true
     }
   ]
 }

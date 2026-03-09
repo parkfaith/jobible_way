@@ -1,0 +1,1 @@
+ALTER TABLE `weekly_tasks` ADD `bible_reading_chapter` text;

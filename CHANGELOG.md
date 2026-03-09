@@ -5,6 +5,29 @@
 
 ---
 
+## [0.11.0] — 2026-03-09
+> 일일체크 성경통독 장(章) 기록 기능 + 홈 퀵메뉴 컴팩트화
+
+### 추가
+- **일일체크 성경통독 기록**: 성경 통독 항목 옆에 이번 주차 성경 범위 표시 + 장 입력 필드 (디바운스 자동 저장). 장 입력 시 자동 체크, 삭제 시 자동 해제
+- DB 스키마: `daily_checks` 테이블에 `bible_chapter` 컬럼 추가
+- DB 스키마: `weekly_tasks` 테이블에 `bible_reading_chapter` 컬럼 추가
+
+### 변경
+- **홈 퀵메뉴**: 2열 그리드 → 1줄 가로 배치로 컴팩트하게 변경
+- **홈 대시보드**: 불필요한 성경통독 카드 제거 및 미사용 코드 정리
+
+### 수정 파일
+- `backend/src/db/schema.ts` — `bibleChapter` (dailyChecks), `bibleReadingChapter` (weeklyTasks) 필드 추가
+- `backend/src/routes/daily.ts` — GET/PUT에 `bibleChapter` 지원
+- `backend/src/routes/weekly.ts` — GET/PUT에 `bibleReadingChapter` 지원
+- `backend/drizzle/migrations/0010_windy_toad_men.sql` — weekly_tasks 마이그레이션
+- `backend/drizzle/migrations/0011_hard_diamondback.sql` — daily_checks 마이그레이션
+- `frontend/src/pages/DailyPage.tsx` — 성경통독 장 입력 UI + 자동 체크 로직
+- `frontend/src/pages/DashboardPage.tsx` — 퀵메뉴 컴팩트화, 미사용 코드 제거
+
+---
+
 ## [0.10.3] — 2026-03-09
 > 3주차 과제물 데이터 추가
 

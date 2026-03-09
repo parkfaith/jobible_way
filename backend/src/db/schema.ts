@@ -60,6 +60,7 @@ export const weeklyTasks = sqliteTable('weekly_tasks', {
   bookReportDone: integer('book_report_done').default(0),
   previewDone: integer('preview_done').default(0),
   sermonWatched: integer('sermon_watched').default(0),
+  bibleReadingChapter: text('bible_reading_chapter'),
   assignmentMemo: text('assignment_memo'),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 }, (t) => [
@@ -81,6 +82,7 @@ export const dailyChecks = sqliteTable('daily_checks', {
   prayer30min: integer('prayer_30min').default(0),
   qtDone: integer('qt_done').default(0),
   bibleReading: integer('bible_reading').default(0),
+  bibleChapter: text('bible_chapter'),
   verseReading: integer('verse_reading').default(0),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 }, (t) => [
