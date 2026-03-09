@@ -20,6 +20,7 @@ export default function SermonSummary({ videoId }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [checked, setChecked] = useState(false)
   const [hasCaptions, setHasCaptions] = useState(true)
+  const [tooLong, setTooLong] = useState(false)
   const generating = useRef(false)
 
   useEffect(() => {
@@ -38,6 +39,12 @@ export default function SermonSummary({ videoId }: Props) {
 
         if (data.hasCaptions === false) {
           setHasCaptions(false)
+          setChecked(true)
+          return
+        }
+
+        if (data.tooLong === true) {
+          setTooLong(true)
           setChecked(true)
           return
         }
@@ -75,6 +82,17 @@ export default function SermonSummary({ videoId }: Props) {
   if (!checked) return null
   // 자막이 없고 요약도 없으면 컴포넌트 숨김
   if (!summary && !hasCaptions) return null
+
+  // 영상이 너무 길면 메시지 표시
+  if (!summary && tooLong) {
+    return (
+      <div className="border-t border-[var(--color-border)]">
+        <div className="w-full flex items-center justify-center gap-2 p-4 text-sm text-[var(--color-text-secondary)] font-[var(--font-ui)]">
+          설교 영상 길이가 너무 길어 AI 요약을 제공하지 않습니다.
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="border-t border-[var(--color-border)]">

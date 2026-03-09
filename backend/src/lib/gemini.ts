@@ -113,3 +113,30 @@ export async function hasYouTubeCaptions(
   const data = (await res.json()) as { items?: Array<unknown> }
   return (data.items?.length ?? 0) > 0
 }
+
+// YouTube 영상 길이(초) 조회
+export async function getYouTubeDuration(
+  videoId: string,
+  youtubeApiKey: string,
+): Promise<number> {
+  const res = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=contentDetails&key=${youtubeApiKey}`,
+  )
+  if (!res.ok) return 0
+  const data = (await res.json()) as {
+    items?: Array<{ contentDetails?: { duration?: string } }>
+  }
+  const duration = data.items?.[0]?.contentDetails?.duration
+  if (!duration) return 0
+  return parseISO8601Duration(duration)
+}
+
+// ISO 8601 duration (PT1H10M30S) → 초 변환
+function parseISO8601Duration(duration: string): number {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+  if (!match) return 0
+  const hours = parseInt(match[1] || '0')
+  const minutes = parseInt(match[2] || '0')
+  const seconds = parseInt(match[3] || '0')
+  return hours * 3600 + minutes * 60 + seconds
+}

@@ -5,6 +5,21 @@
 
 ---
 
+## [0.10.2] — 2026-03-09
+> 설교보기 AI 요약 — 긴 영상 제외 처리
+
+### 변경
+- **AI 요약 길이 제한**: 주일예배 영상이 1시간 10분(70분)을 초과하면 AI 요약을 생성하지 않음
+- 백엔드에서 YouTube Data API `contentDetails.duration`으로 영상 길이 조회
+- 프론트엔드에서 "설교 영상 길이가 너무 길어 AI 요약을 제공하지 않습니다." 메시지 표시
+
+### 수정 파일
+- `backend/src/lib/gemini.ts` — `getYouTubeDuration()`, `parseISO8601Duration()` 함수 추가
+- `backend/src/routes/summary.ts` — GET/POST 엔드포인트에 영상 길이 체크 추가
+- `frontend/src/components/SermonSummary.tsx` — `tooLong` 상태 처리 및 안내 메시지 표시
+
+---
+
 ## [0.10.1] — 2026-03-08
 > 제자동역자 기도제목 페이지 추가
 
