@@ -80,10 +80,36 @@ export default function ProfilePage() {
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
           <h3 className="text-sm font-medium text-[var(--color-primary)] font-[var(--font-ui)] mb-3">앱 정보</h3>
           <div className="space-y-2">
-            <InfoRow label="버전" value="1.0.0" />
+            <InfoRow label="버전" value="1.1.0" />
             <InfoRow label="개발" value="Park JunHyoung(Ryan)" />
           </div>
         </div>
+
+        {/* 만든이의 다른 앱 */}
+        <a
+          href="https://jobible.kr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 transition-colors hover:bg-[var(--color-bg)]"
+        >
+          <p className="text-xs text-[var(--color-text-secondary)] font-[var(--font-ui)] mb-3">만든이의 다른 앱</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/icons/golden-days.png"
+              alt="Golden Days"
+              className="w-11 h-11 rounded-xl shadow-sm"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[var(--color-text-primary)] font-[var(--font-ui)]">Golden Days</p>
+              <p className="text-xs text-[var(--color-text-secondary)] font-[var(--font-ui)] mt-0.5">매일 새로운 성경 말씀과 묵상 콘텐츠</p>
+            </div>
+            <svg className="w-4 h-4 text-[var(--color-text-secondary)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </div>
+        </a>
 
         {/* 로그아웃 */}
         <Button variant="secondary" onClick={handleSignOut} className="w-full">
