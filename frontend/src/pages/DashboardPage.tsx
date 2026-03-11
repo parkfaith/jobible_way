@@ -288,15 +288,15 @@ export default function DashboardPage() {
             },
           ]
           return (
-            <div className="flex gap-2 pb-4">
+            <div className="grid grid-cols-4 gap-2 pb-4">
               {menus.map((menu) => (
                 <button
                   key={menu.path}
                   onClick={() => navigate(menu.path)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg py-4 px-3 cursor-pointer transition-shadow hover:shadow-md"
+                  className="flex flex-col items-center justify-center gap-1.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg py-3 px-2 cursor-pointer transition-shadow hover:shadow-md"
                 >
                   <span className="text-[var(--color-secondary)]">{menu.icon}</span>
-                  <span className="text-sm font-medium text-[var(--color-primary)] font-[var(--font-ui)] whitespace-nowrap">{menu.label}</span>
+                  <span className="text-xs font-medium text-[var(--color-primary)] font-[var(--font-ui)]">{menu.label}</span>
                 </button>
               ))}
             </div>
