@@ -43,6 +43,7 @@ export default function DailyPage() {
   const [daily, setDaily] = useState<DailyData>({ prayer30min: 0, qtDone: 0, bibleReading: 0, bibleChapter: null, verseReading: 0 })
   const [loading, setLoading] = useState(true)
   const chapterTimer = useRef<ReturnType<typeof setTimeout>>(null)
+  const [completedDates, setCompletedDates] = useState<Set<string>>(new Set())
 
   // 캘린더 표시용 년/월 (선택된 날짜 기준)
   const selectedDate = new Date(date + 'T00:00:00')
@@ -73,6 +74,21 @@ export default function DailyPage() {
     setViewMonth(d.getMonth())
   }, [date])
 
+  // 월별 완료 현황 로드
+  useEffect(() => {
+    loadMonthlyCompleted()
+  }, [viewYear, viewMonth])
+
+  async function loadMonthlyCompleted() {
+    const from = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-01`
+    const lastDay = new Date(viewYear, viewMonth + 1, 0).getDate()
+    const to = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+    try {
+      const data: { date: string; count: number }[] = await api.get(`/api/progress/heatmap?from=${from}&to=${to}`)
+      setCompletedDates(new Set(data.filter(d => d.count >= 4).map(d => d.date)))
+    } catch { /* 무음 실패 */ }
+  }
+
   async function loadDaily() {
     setLoading(true)
     try {
@@ -94,6 +110,14 @@ export default function DailyPage() {
     try {
       await api.put('/api/daily', { date, ...updated })
       showToast(newVal ? '완료!' : '취소됨')
+      // 완료 현황 갱신
+      const count = (updated.prayer30min ? 1 : 0) + (updated.qtDone ? 1 : 0) + (updated.bibleReading ? 1 : 0) + (updated.verseReading ? 1 : 0)
+      setCompletedDates(prev => {
+        const next = new Set(prev)
+        if (count >= 4) next.add(date)
+        else next.delete(date)
+        return next
+      })
     } catch {
       setDaily(previous)
       showToast('저장 실패', 'error')
@@ -101,7 +125,9 @@ export default function DailyPage() {
   }
 
   function handleChapterChange(value: string) {
-    const hasValue = value.trim().length > 0
+    const numericValue = value.replace(/[^0-9]/g, '')
+    value = numericValue
+    const hasValue = value.length > 0
     const updated = { ...daily, bibleChapter: value || null, bibleReading: hasValue ? 1 : 0 }
     setDaily(updated)
 
@@ -109,6 +135,14 @@ export default function DailyPage() {
     chapterTimer.current = setTimeout(async () => {
       try {
         await api.put('/api/daily', { date, ...updated })
+        // 완료 현황 갱신
+        const count = (updated.prayer30min ? 1 : 0) + (updated.qtDone ? 1 : 0) + (updated.bibleReading ? 1 : 0) + (updated.verseReading ? 1 : 0)
+        setCompletedDates(prev => {
+          const next = new Set(prev)
+          if (count >= 4) next.add(date)
+          else next.delete(date)
+          return next
+        })
       } catch { /* 무음 실패 */ }
     }, 800)
   }
@@ -169,6 +203,7 @@ export default function DailyPage() {
               const isSelected = cellDate === date
               const isThisWeek = cellDate >= thisWeek.start && cellDate <= thisWeek.end
               const isSunday = idx % 7 === 0
+              const isAllDone = completedDates.has(cellDate)
 
               return (
                 <button
@@ -187,6 +222,9 @@ export default function DailyPage() {
                   }`}
                 >
                   {day}
+                  {isAllDone && (
+                    <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
+                  )}
                   {isToday && !isSelected && (
                     <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-secondary)]" />
                   )}
@@ -254,6 +292,7 @@ export default function DailyPage() {
                       <input
                         type="text"
                         inputMode="numeric"
+                        pattern="[0-9]*"
                         placeholder=""
                         value={daily.bibleChapter ?? ''}
                         onClick={(e) => e.stopPropagation()}

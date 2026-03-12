@@ -80,7 +80,7 @@ export default function ProfilePage() {
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
           <h3 className="text-sm font-medium text-[var(--color-primary)] font-[var(--font-ui)] mb-3">앱 정보</h3>
           <div className="space-y-2">
-            <InfoRow label="버전" value="1.1.0" />
+            <InfoRow label="버전" value="1.2.0" />
             <InfoRow label="개발" value="Park JunHyoung(Ryan)" />
           </div>
         </div>
