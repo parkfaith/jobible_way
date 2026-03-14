@@ -26,6 +26,10 @@ progressRoute.get('/heatmap', requireAuth, async (c) => {
   const heatmap = rows.map(r => ({
     date: r.date,
     count: (r.prayer30min ?? 0) + (r.qtDone ?? 0) + (r.bibleReading ?? 0) + (r.verseReading ?? 0),
+    prayer: r.prayer30min ?? 0,
+    qt: r.qtDone ?? 0,
+    bible: r.bibleReading ?? 0,
+    verse: r.verseReading ?? 0,
   }))
 
   return c.json(heatmap)
