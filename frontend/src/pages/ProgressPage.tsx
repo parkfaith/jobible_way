@@ -139,18 +139,16 @@ const ITEM_CONFIG = [
 
 type ItemKey = typeof ITEM_CONFIG[number]['key']
 
-// 과정 시작일(일요일) 기준으로 현재 주차의 월~일 날짜 범위 계산
+// 현재 주차의 일~토 날짜 범위 계산 (주 시작 = 일요일)
 function getCurrentWeekRange() {
   const now = new Date()
   now.setHours(0, 0, 0, 0)
   const day = now.getDay() // 0=일 ~ 6=토
-  // 월요일 기준 시작 (일요일이면 6일 전, 월요일이면 0일 전)
-  const diffToMon = day === 0 ? 6 : day - 1
-  const monday = new Date(now)
-  monday.setDate(now.getDate() - diffToMon)
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  return { monday, sunday }
+  const sunday = new Date(now)
+  sunday.setDate(now.getDate() - day)
+  const saturday = new Date(sunday)
+  saturday.setDate(sunday.getDate() + 6)
+  return { sunday, saturday }
 }
 
 function formatShortDate(d: Date) {
@@ -160,14 +158,14 @@ function formatShortDate(d: Date) {
 /* ─── 이번 주 항목별 달성률 카드 ─── */
 
 function WeeklyRateCard({ data }: { data: HeatmapEntry[] }) {
-  const { monday, sunday } = getCurrentWeekRange()
+  const { sunday, saturday } = getCurrentWeekRange()
   const now = new Date()
   now.setHours(0, 0, 0, 0)
 
-  // 이번 주 월~오늘까지의 날짜 목록
+  // 이번 주 일~오늘까지의 날짜 목록
   const weekDates: string[] = []
-  const d = new Date(monday)
-  while (d <= now && d <= sunday) {
+  const d = new Date(sunday)
+  while (d <= now && d <= saturday) {
     weekDates.push(formatDate(d))
     d.setDate(d.getDate() + 1)
   }
@@ -188,7 +186,7 @@ function WeeklyRateCard({ data }: { data: HeatmapEntry[] }) {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-[var(--color-primary)] font-[var(--font-ui)]">이번 주 달성률</h3>
         <span className="text-[11px] text-[var(--color-text-secondary)]">
-          {formatShortDate(monday)} ~ {formatShortDate(sunday)}
+          {formatShortDate(sunday)} ~ {formatShortDate(saturday)}
         </span>
       </div>
       <div className="grid grid-cols-4 gap-2">
