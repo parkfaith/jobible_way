@@ -5,6 +5,24 @@ export interface AssignmentItem {
   content: string
 }
 
+// 과제물에서 성경읽기 범위 추출
+export function getBibleReading(weekNumber: number): string | null {
+  const items = ASSIGNMENTS[weekNumber]
+  if (!items) return null
+  const entry = items.find(i => i.category === '성경읽기')
+  return entry?.content ?? null
+}
+
+// 과제물에서 독서 책 제목 추출
+export function getBookTitle(weekNumber: number): string | null {
+  const items = ASSIGNMENTS[weekNumber]
+  if (!items) return null
+  const entry = items.find(i => i.category === '독서')
+  if (!entry) return null
+  const match = entry.content.match(/["\u201C](.+?)["\u201D]/)
+  return match?.[1] ?? null
+}
+
 export const ASSIGNMENTS: Record<number, AssignmentItem[]> = {
   2: [
     { category: '교재예습', content: '1권 2과 하나님과 매일 만나는 생활' },

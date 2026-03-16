@@ -2,9 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
 import { api } from '../lib/api'
-import { BIBLE_READING } from '../lib/bible-reading'
-import { REQUIRED_BOOKS } from '../lib/required-books'
-import { ASSIGNMENTS } from '../lib/assignments'
+import { ASSIGNMENTS, getBibleReading, getBookTitle } from '../lib/assignments'
 
 interface CurriculumItem {
   weekNumber: number
@@ -141,28 +139,28 @@ export default function WeekDetailPage() {
             {curr.theme && (
               <p className="text-xs text-[var(--color-text-secondary)] mt-1">주제: {curr.theme}</p>
             )}
-            {(BIBLE_READING[weekNumber] || REQUIRED_BOOKS[weekNumber]) && (
+            {(getBibleReading(weekNumber) || getBookTitle(weekNumber)) && (
               <div className="mt-3 pt-3 border-t border-[var(--color-border)] space-y-2">
-                {BIBLE_READING[weekNumber] && (
+                {getBibleReading(weekNumber) && (
                   <div className="flex items-center gap-1.5">
                     <svg className="w-4 h-4 text-[var(--color-accent)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
                     </svg>
                     <span className="text-xs text-[var(--color-accent)] font-[var(--font-ui)]">
-                      성경통독: {BIBLE_READING[weekNumber]}
+                      성경통독: {getBibleReading(weekNumber)}
                     </span>
                   </div>
                 )}
-                {REQUIRED_BOOKS[weekNumber]?.map((book, i) => (
-                  <div key={i} className="flex items-start gap-1.5">
+                {getBookTitle(weekNumber) && (
+                  <div className="flex items-start gap-1.5">
                     <svg className="w-4 h-4 text-[var(--color-secondary)] flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
                     </svg>
                     <span className="text-xs text-[var(--color-secondary)] font-[var(--font-ui)]">
-                      필독서: {book.title}{book.note ? ` (${book.note})` : ''}{book.author ? ` — ${book.author}` : ''}
+                      필독서: {getBookTitle(weekNumber)}
                     </span>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>

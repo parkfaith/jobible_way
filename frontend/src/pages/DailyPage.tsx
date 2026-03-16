@@ -3,7 +3,7 @@ import AppShell from '../components/layout/AppShell'
 import { api } from '../lib/api'
 import { useToast } from '../components/ui/Toast'
 import { today, formatDate } from '../lib/date'
-import { BIBLE_READING } from '../lib/bible-reading'
+import { getBibleReading } from '../lib/assignments'
 
 interface DailyData {
   prayer30min: number
@@ -55,7 +55,7 @@ export default function DailyPage() {
   const now = new Date()
   const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
   const currentWeek = Math.max(1, Math.min(32, diff + 1))
-  const bibleBook = BIBLE_READING[currentWeek] ?? ''
+  const bibleBook = getBibleReading(currentWeek) ?? ''
 
   // 오늘이 속한 주 범위
   const todayStr = today()

@@ -5,7 +5,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import { today } from '../lib/date'
 import { usePwaInstall } from '../lib/usePwaInstall'
-import { BIBLE_READING } from '../lib/bible-reading'
+import { getBibleReading } from '../lib/assignments'
 
 interface CurriculumItem {
   weekNumber: number
@@ -120,13 +120,13 @@ export default function DashboardPage() {
           {currentCurr && (
             <p className="text-xs text-[var(--color-secondary)] mt-1">{currentCurr.scripture}</p>
           )}
-          {BIBLE_READING[currentWeek] && (
+          {getBibleReading(currentWeek) && (
             <div className="flex items-center gap-1.5 mt-2">
               <svg className="w-3.5 h-3.5 text-[var(--color-accent)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
               </svg>
               <span className="text-xs text-[var(--color-accent)] font-[var(--font-ui)]">
-                성경통독: {BIBLE_READING[currentWeek]}
+                성경통독: {getBibleReading(currentWeek)}
               </span>
             </div>
           )}
