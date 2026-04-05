@@ -126,6 +126,31 @@ export default function WeekDetailPage() {
   return (
     <AppShell title={`${weekNumber}주차`} showBack>
       <div className="p-4 space-y-4">
+        {/* 주차 네비게이션 */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => weekNumber > 1 && navigate(`/weeks/${weekNumber - 1}`)}
+            disabled={weekNumber <= 1}
+            className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] disabled:opacity-30 cursor-pointer disabled:cursor-default py-1.5 px-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:shadow-sm disabled:hover:shadow-none transition-shadow"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            {weekNumber > 1 ? `${weekNumber - 1}주차` : '이전'}
+          </button>
+          <span className="text-xs text-[var(--color-text-secondary)]">{weekNumber} / 32주차</span>
+          <button
+            onClick={() => weekNumber < 32 && navigate(`/weeks/${weekNumber + 1}`)}
+            disabled={weekNumber >= 32}
+            className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] disabled:opacity-30 cursor-pointer disabled:cursor-default py-1.5 px-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:shadow-sm disabled:hover:shadow-none transition-shadow"
+          >
+            {weekNumber < 32 ? `${weekNumber + 1}주차` : '다음'}
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+
         {/* 주차 정보 카드 */}
         {curr && (
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5">
