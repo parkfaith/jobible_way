@@ -109,11 +109,35 @@ export default function DashboardPage() {
         </p>
 
         {/* 현재 주차 진행 카드 */}
-        <button
-          onClick={() => navigate(`/weeks/${currentWeek}`)}
-          className="w-full text-left bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 cursor-pointer transition-shadow hover:shadow-md"
-        >
-          <p className="text-xs text-[var(--color-text-secondary)] mb-1">현재 진행</p>
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
+          {/* 주차 네비게이션 헤더 */}
+          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-border)]/50">
+            <button
+              onClick={() => currentWeek > 1 && navigate(`/weeks/${currentWeek - 1}`)}
+              disabled={currentWeek <= 1}
+              className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] disabled:opacity-30 cursor-pointer disabled:cursor-default py-1 px-2 rounded-lg hover:bg-[var(--color-border)]/40 disabled:hover:bg-transparent transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              {currentWeek > 1 ? `${currentWeek - 1}주차` : '이전'}
+            </button>
+            <span className="text-xs text-[var(--color-text-secondary)]">현재 진행</span>
+            <button
+              onClick={() => currentWeek < 32 && navigate(`/weeks/${currentWeek + 1}`)}
+              disabled={currentWeek >= 32}
+              className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] disabled:opacity-30 cursor-pointer disabled:cursor-default py-1 px-2 rounded-lg hover:bg-[var(--color-border)]/40 disabled:hover:bg-transparent transition-colors"
+            >
+              {currentWeek < 32 ? `${currentWeek + 1}주차` : '다음'}
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+          <button
+            onClick={() => navigate(`/weeks/${currentWeek}`)}
+            className="w-full text-left p-5 cursor-pointer transition-shadow hover:shadow-md"
+          >
           <h2 className="text-xl font-semibold text-[var(--color-primary)] font-[var(--font-heading)]">
             {currentWeek}주차 · {currentCurr?.title ?? '제자훈련'}
           </h2>
@@ -139,7 +163,8 @@ export default function DashboardPage() {
           <p className="text-xs text-[var(--color-text-secondary)] mt-2 text-right">
             {currentWeek} / 32주 ({progress}%)
           </p>
-        </button>
+          </button>
+        </div>
 
         {/* 오늘의 일일 체크 */}
         {(() => {
