@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import AppShell from '../components/layout/AppShell'
 import TabNav from '../components/ui/TabNav'
 import { api } from '../lib/api'
@@ -36,6 +36,7 @@ function getWeekDates(weekNumber: number) {
 export default function SermonPage() {
   const { weekId } = useParams()
   const { showToast } = useToast()
+  const navigate = useNavigate()
   const weekNumber = parseInt(weekId ?? '1')
 
   const { sundayLabel, fridayLabel } = getWeekDates(weekNumber)
@@ -88,6 +89,30 @@ export default function SermonPage() {
 
   return (
     <AppShell title={`${weekNumber}주차 설교보기`} showBack>
+      {/* 주차 네비게이션 */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--color-border)]/50">
+        <button
+          onClick={() => navigate(`/weeks/${weekNumber - 1}/sermon`)}
+          disabled={weekNumber <= 1}
+          className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] disabled:opacity-30 cursor-pointer disabled:cursor-default py-1 px-2 rounded-lg hover:bg-[var(--color-border)]/40 disabled:hover:bg-transparent transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          {weekNumber > 1 ? `${weekNumber - 1}주차` : '이전'}
+        </button>
+        <span className="text-xs text-[var(--color-text-secondary)]">{weekNumber} / 32주</span>
+        <button
+          onClick={() => navigate(`/weeks/${weekNumber + 1}/sermon`)}
+          disabled={weekNumber >= 32}
+          className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] disabled:opacity-30 cursor-pointer disabled:cursor-default py-1 px-2 rounded-lg hover:bg-[var(--color-border)]/40 disabled:hover:bg-transparent transition-colors"
+        >
+          {weekNumber < 32 ? `${weekNumber + 1}주차` : '다음'}
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
       <TabNav tabs={SERVICES} activeTab={service} onChange={setService} />
       <div className="p-4 space-y-4">
         {/* 시청 완료 버튼 — 영상이 없으면 비활성화 */}
