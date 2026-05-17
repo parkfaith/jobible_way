@@ -1,7 +1,34 @@
 # CHANGELOG
 
+## [1.3.12] - 2026-05-14
+> Firebase 토큰 기반 이메일 검증 강화
+
+### 변경
+- **사용자 이메일 신뢰 경로 수정**: `/api/me`에서 클라이언트 요청 body의 이메일을 저장하지 않고 Firebase ID 토큰의 `email` claim을 저장하도록 변경
+- **관리자 권한 검증 강화**: 관리자 API 접근 여부를 DB에 저장된 이메일이 아니라 검증된 Firebase 토큰 이메일 기준으로 판단하도록 변경
+
+### 수정 파일
+- `backend/src/lib/firebase-admin.ts`
+- `backend/src/middleware/auth.ts`
+- `backend/src/types.ts`
+- `backend/src/routes/users.ts`
+- `backend/src/routes/admin.ts`
+
+---
+
 모든 주요 변경사항은 이 파일에 기록됩니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.0.0/)를 따릅니다.
+
+---
+
+## [1.3.12] — 2026-05-17
+> 13주차 과제물 데이터 추가
+
+### 추가
+- **13주차 과제물**: 교재예습(2권 7과 예수 그리스도의 부활), 기도, Q.T(요한복음 21:15-23 부활하신 예수님과 베드로의 만남), 성구암송(로마서 4:25, 갈라디아서 2:20), 성경읽기(사도행전), 독서, 설교요약(5/17, 5/22), 신앙일기(매주 2회), 생활숙제, 전화연락, 기도후원자
+
+### 수정 파일
+- `frontend/src/lib/assignments.ts`
 
 ---
 
