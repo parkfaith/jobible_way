@@ -11,10 +11,8 @@ export const adminRoute = new Hono<AppEnv>()
 
 // 관리자 권한 체크 미들웨어
 adminRoute.use('*', requireAuth, async (c, next) => {
-  const db = c.get('db')
-  const userId = c.get('userId')
-  const [me] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId))
-  if (!me || me.email !== ADMIN_EMAIL) {
+  const userEmail = c.get('userEmail')
+  if (userEmail !== ADMIN_EMAIL) {
     return c.json({ error: 'Forbidden' }, 403)
   }
   await next()

@@ -10,8 +10,9 @@ export const requireAuth = async (c: Context<AppEnv>, next: Next) => {
 
   const token = authHeader.slice(7)
   try {
-    const uid = await verifyFirebaseToken(token, c.env.FIREBASE_PROJECT_ID)
-    c.set('userId', uid)
+    const user = await verifyFirebaseToken(token, c.env.FIREBASE_PROJECT_ID)
+    c.set('userId', user.uid)
+    c.set('userEmail', user.email)
     await next()
   } catch {
     return c.json({ error: 'Invalid token' }, 401)

@@ -6,6 +6,7 @@ export type AppEnv = {
   Bindings: Env
   Variables: {
     userId: string
+    userEmail: string
     db: Database
   }
 }

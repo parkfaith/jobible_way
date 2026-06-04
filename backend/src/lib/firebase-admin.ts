@@ -4,6 +4,11 @@ import * as jose from 'jose'
 let cachedKeys: jose.JSONWebKeySet | null = null
 let cacheExpiry = 0
 
+export interface FirebaseTokenUser {
+  uid: string
+  email: string
+}
+
 // Google의 공개 키를 가져와서 Firebase ID 토큰 서명을 검증
 async function getFirebasePublicKeys(): Promise<jose.JSONWebKeySet> {
   const now = Date.now()
@@ -29,7 +34,7 @@ async function getFirebasePublicKeys(): Promise<jose.JSONWebKeySet> {
 }
 
 // Firebase ID 토큰 검증 후 uid 반환
-export async function verifyFirebaseToken(token: string, projectId: string): Promise<string> {
+export async function verifyFirebaseToken(token: string, projectId: string): Promise<FirebaseTokenUser> {
   const jwks = await getFirebasePublicKeys()
   const keySet = jose.createLocalJWKSet(jwks)
 
@@ -43,5 +48,9 @@ export async function verifyFirebaseToken(token: string, projectId: string): Pro
     throw new Error('토큰에 uid(sub)가 없습니다')
   }
 
-  return uid
+  if (typeof payload.email !== 'string' || !payload.email) {
+    throw new Error('Firebase token email is required')
+  }
+
+  return { uid, email: payload.email }
 }

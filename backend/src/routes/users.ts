@@ -20,15 +20,16 @@ usersRoute.get('/', requireAuth, async (c) => {
 usersRoute.post('/', requireAuth, async (c) => {
   const db = c.get('db')
   const userId = c.get('userId')
-  let body: { name: string; email: string; startDate: string }
+  const userEmail = c.get('userEmail')
+  let body: { name: string; startDate: string }
   try {
     body = await c.req.json()
   } catch {
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
-  const { name, email, startDate } = body
-  if (!name || !email || !startDate) return c.json({ error: 'name, email and startDate are required' }, 400)
-  await db.insert(users).values({ id: userId, name, email, startDate })
-    .onConflictDoUpdate({ target: users.id, set: { name, lastLoginAt: kstDatetime() } })
+  const { name, startDate } = body
+  if (!name || !startDate) return c.json({ error: 'name and startDate are required' }, 400)
+  await db.insert(users).values({ id: userId, name, email: userEmail, startDate })
+    .onConflictDoUpdate({ target: users.id, set: { name, email: userEmail, lastLoginAt: kstDatetime() } })
   return c.json({ ok: true })
 })
