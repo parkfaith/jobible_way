@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import { usePwaInstall } from '../lib/usePwaInstall'
 import { getBibleReading } from '../lib/assignments'
+import { getCurrentWeek, isVacation, RESUME_WEEK } from '../lib/date'
 
 interface CurriculumItem {
   weekNumber: number
@@ -21,8 +22,10 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const { showBanner, hasNativePrompt, isIos, install, dismiss } = usePwaInstall()
   const [curriculum, setCurriculum] = useState<CurriculumItem[]>([])
-  const [currentWeek, setCurrentWeek] = useState(1)
+  // 현재 주차 자동 계산 (방학 반영). 방학 중에는 재개 직전 주차로 고정
+  const [currentWeek, setCurrentWeek] = useState(() => getCurrentWeek())
   const [loading, setLoading] = useState(true)
+  const onVacation = isVacation()
 
   useEffect(() => {
     loadData()
@@ -30,13 +33,6 @@ export default function DashboardPage() {
 
   async function loadData() {
     try {
-      // 1주차 시작일(2026-02-22) 기준 현재 주차 자동 계산
-      const week1 = new Date('2026-02-22T00:00:00+09:00')
-      const now = new Date()
-      const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
-      const week = Math.max(1, Math.min(32, diff + 1))
-      setCurrentWeek(week)
-
       const currData = await api.get('/api/curriculum')
       setCurriculum(currData)
     } catch {
@@ -68,6 +64,23 @@ export default function DashboardPage() {
         <p className="text-sm text-[var(--color-text-secondary)]">
           {user?.displayName ?? '훈련생'}님, 오늘도 은혜 안에서 성장하세요.
         </p>
+
+        {/* 방학 안내 배너 */}
+        {onVacation && (
+          <div className="bg-[var(--color-surface)] border border-[var(--color-accent)]/40 rounded-xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[var(--color-accent)]/15 flex items-center justify-center text-[var(--color-accent)] shrink-0">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[var(--color-primary)]">방학 중입니다</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                제자훈련은 9월 6일({RESUME_WEEK}주차)부터 다시 시작합니다. 방학 동안도 성경통독과 신앙일기를 이어가 보세요.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* 현재 주차 진행 카드 */}
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">

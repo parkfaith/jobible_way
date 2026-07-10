@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import AppShell from '../components/layout/AppShell'
 import { api } from '../lib/api'
 import { useToast } from '../components/ui/Toast'
-import { today, formatDate } from '../lib/date'
+import { today, formatDate, getCurrentWeek } from '../lib/date'
 import { getBibleReading } from '../lib/assignments'
 
 interface DailyData {
@@ -50,11 +50,8 @@ export default function DailyPage() {
   const [viewYear, setViewYear] = useState(selectedDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(selectedDate.getMonth())
 
-  // 현재 주차 계산
-  const week1 = new Date('2026-02-22T00:00:00+09:00')
-  const now = new Date()
-  const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
-  const currentWeek = Math.max(1, Math.min(32, diff + 1))
+  // 현재 주차 계산 (방학 반영)
+  const currentWeek = getCurrentWeek()
   const bibleBook = getBibleReading(currentWeek) ?? ''
 
   // 오늘이 속한 주 범위

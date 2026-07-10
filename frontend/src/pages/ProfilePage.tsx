@@ -4,6 +4,7 @@ import { useAuth } from '../lib/AuthContext'
 import { api } from '../lib/api'
 import AppShell from '../components/layout/AppShell'
 import Button from '../components/ui/Button'
+import { getCurrentWeek } from '../lib/date'
 
 interface StreakData {
   currentStreak: number
@@ -16,11 +17,8 @@ export default function ProfilePage() {
   const { user, signOut } = useAuth()
   const [streak, setStreak] = useState<StreakData>({ currentStreak: 0, maxStreak: 0, totalDone: 0 })
 
-  // 현재 주차 자동 계산
-  const week1 = new Date('2026-02-22T00:00:00+09:00')
-  const now = new Date()
-  const diff = Math.floor((now.getTime() - week1.getTime()) / (7 * 24 * 60 * 60 * 1000))
-  const currentWeek = Math.max(1, Math.min(32, diff + 1))
+  // 현재 주차 자동 계산 (방학 반영)
+  const currentWeek = getCurrentWeek()
 
   useEffect(() => {
     api.get('/api/progress/streak').then(setStreak).catch(() => {})

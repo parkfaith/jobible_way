@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [1.4.0] — 2026-07-10
+> 방학 기간 반영 — 주차 자동 진행 일시 중단 및 9월 재개
+
+### 변경
+- **방학 처리**: 19주차(6/28~7/4) 종료 후 방학. 방학 기간(7/5~9/5) 동안 현재 주차 자동 진행을 중단하고 19주차로 고정.
+- **9월 재개**: 20주차를 2026-09-06(일)부터 재개하여 32주차까지 매주 정상 진행 (방학으로 9주 이동).
+- **주차 계산 단일화**: 5개 페이지(Dashboard, Weeks, Assignments, Daily, Profile)에 중복돼 있던 현재 주차 계산 로직을 `lib/date.ts`의 `getCurrentWeek()` 공통 헬퍼로 통합. 방학 여부 `isVacation()`, 주차→시작일 `getWeekStartDate()` 추가.
+- **설교 영상 매핑**: 20주차 이후 주차↔날짜 매핑에 방학 오프셋(+63일) 반영 (프론트/백엔드).
+
+### 추가
+- **방학 안내 배너**: 대시보드에 방학 기간 안내 및 재개일(9월 6일, 20주차) 표시.
+
+### 수정 파일
+- `frontend/src/lib/date.ts`
+- `frontend/src/pages/DashboardPage.tsx`, `WeeksPage.tsx`, `AssignmentsPage.tsx`, `DailyPage.tsx`, `ProfilePage.tsx`, `SermonPage.tsx`
+- `backend/src/routes/sermon.ts`
+
+---
+
 ## [1.3.17] — 2026-06-28
 > 19주차 과제물 데이터 추가
 
