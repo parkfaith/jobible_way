@@ -47,8 +47,28 @@ cd frontend && npx tsc --noEmit && npx vite build
 - `/api/weeks/:weekNumber/sermons` — YouTube 플레이리스트에서 해당 주차 설교 영상 조회
 - `/api/daily`, `/api/weekly/:weekNumber` — `onConflictDoUpdate` 기반 upsert
 - `/api/progress/{heatmap|streak|volumes}` — 읽기 전용 집계 쿼리
+- `/api/summaries/:videoId` — AI 설교 요약 (GET 조회 / POST 생성)
+- `/api/admin/users`, `/api/admin/users/:userId/fellow` — 관리자 전용
 
 중첩 라우팅: `backend/src/index.ts`에서 `weeksApi` Hono 인스턴스를 생성하여 `/api/weeks`에 마운트, 하위에 `:weekNumber/sermon`, `:weekNumber/diary`를 서브 라우트로 연결.
+
+### 인증·권한
+- `requireAuth` 미들웨어가 Firebase ID 토큰을 검증한 뒤 `userId`와 **`userEmail`을 토큰의 claim에서 직접** 추출해 Hono 컨텍스트에 저장. 클라이언트가 보낸 body의 이메일은 신뢰하지 않음.
+- 관리자 판별: `backend/src/routes/admin.ts`의 `ADMIN_EMAIL` 상수(`parkfaith75@gmail.com`)와 검증된 `userEmail`을 비교. 불일치 시 403.
+- 일반 사용자 권한: `users.canViewFellow` 필드로 제자동역자(FellowPage) 열람 제어. 관리자가 `/admin`에서 토글.
+
+### AI 설교 요약 (Gemini)
+`backend/src/lib/gemini.ts` — Gemini API로 YouTube 설교 영상을 요약. 스트리밍(`streamGenerateContent`) 방식이며 결과는 `sermon_summaries` 테이블에 **videoId 단위로 전 사용자 공유** 저장(중복 생성 방지). 생성 전 자막 존재 여부(`hasYouTubeCaptions`)와 영상 길이(최대 70분)를 확인.
+
+### 주차 계산 (방학 반영)
+`frontend/src/lib/date.ts`가 주차 계산의 **단일 출처**. 각 페이지에서 직접 날짜 계산하지 말고 아래 헬퍼를 사용할 것:
+- `getCurrentWeek()` — 현재 진행 주차. 1주차 시작 2026-02-22(일), 19주차(~7/4)까지 진행 후 방학, 20주차부터 2026-09-06(일) 재개하여 32주차까지.
+- `isVacation()` — 방학(2026-07-05 ~ 09-05) 여부
+- `getWeekStartDate(weekNumber)` — 주차 → 시작 일요일
+- 설교 영상 주차↔날짜 매핑은 프론트(`SermonPage.tsx`)와 백엔드(`routes/sermon.ts`) **양쪽에** 20주차 이후 +63일 오프셋이 들어가 있음. 한쪽만 고치면 어긋나므로 함께 수정할 것.
+
+### 과제물 데이터
+`frontend/src/lib/assignments.ts`의 `ASSIGNMENTS`(주차 → 항목 배열)가 과제물의 단일 출처. **성경통독·필독서도 별도 상수가 아니라 이 데이터에서 추출**(`getBibleReading()`, `getBookTitle()`)하므로, 주차 데이터를 추가하면 대시보드·주차 상세·데일리 화면에 함께 반영됨.
 
 ### 프론트엔드 구조
 - **진입점**: `main.tsx` → ErrorBoundary → AuthProvider → ToastProvider → RouterProvider
@@ -56,17 +76,21 @@ cd frontend && npx tsc --noEmit && npx vite build
 - **인증**: `lib/AuthContext.tsx` — Firebase `onAuthStateChanged` 리스너, 로그인 시 백엔드에 사용자 자동 upsert
 - **API 클라이언트**: `lib/api.ts` — Firebase ID 토큰을 자동 첨부하는 fetch 래퍼
 - **레이아웃**: `AppShell` (고정 헤더 + 콘텐츠 + BottomNav)이 모든 보호 페이지를 감쌈
+- **청크 로드 복구**: `router/index.tsx`의 `lazyWithRetry` + `RouteErrorBoundary` — 배포 후 캐시 불일치로 동적 import가 실패하면 SW 캐시를 비우고 1회 자동 새로고침 (10초 내 재시도는 무한 루프 방지로 차단)
+
+보호 라우트 페이지: `/home`(대시보드), `/weeks`, `/weeks/:weekId`(주차 상세), `/weeks/:weekId/{sermon|diary|verse}`, `/daily`, `/assignments`(과제물), `/progress`, `/curriculum`, `/fellow`(제자동역자), `/profile`, `/admin`(관리자 전용).
 
 ### 데이터 패턴
 - **자동 저장(Auto-save)**: SermonPage, DiaryPage에서 `useRef` 타이머로 1.5초 디바운스 저장. 성공 시 무음, 실패 시에만 토스트 표시.
 - **낙관적 업데이트(Optimistic Update)**: DailyPage, WeekDetailPage에서 상태를 즉시 변경 후 API 실패 시 롤백.
 
-### 데이터베이스 스키마 (6 테이블)
-- `users` — PK는 Firebase UID (text)
+### 데이터베이스 스키마 (7 테이블)
+- `users` — PK는 Firebase UID (text). `canViewFellow`로 제자동역자 열람 권한 관리
 - `curriculum` — 32주 정적 데이터 (시드), weekNumber에 유니크 제약
 - `sermonNotes` — (userId, weekNumber, service)에 유니크
 - `diaryEntries` — (userId, weekNumber)에 유니크
 - `weeklyTasks` — 복합 PK (userId, weekNumber)
+- `sermonSummaries` — AI 설교 요약, videoId에 유니크 (사용자별이 아닌 공유 데이터)
 - `dailyChecks` — 복합 PK (userId, date)
 
 스키마 변경 시: `backend/src/db/schema.ts` 수정 → `npm run generate` → `npm run migrate` 순서로 실행.
@@ -78,6 +102,7 @@ cd frontend && npx tsc --noEmit && npx vite build
 TURSO_DATABASE_URL, TURSO_AUTH_TOKEN
 FIREBASE_PROJECT_ID
 YOUTUBE_API_KEY
+GEMINI_API_KEY (AI 설교 요약)
 ALLOWED_ORIGINS (선택), NODE_ENV (선택)
 ```
 
