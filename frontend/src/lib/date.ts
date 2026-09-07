@@ -10,23 +10,22 @@ export function formatDate(d: Date) {
 }
 
 // ── 제자훈련 주차 계산 (방학 반영) ─────────────────────────────
-// 1주차 시작: 2026-02-22(일). 19주차(6/28~7/4)까지 정상 진행 후 방학.
-// 방학: 2026-07-05 ~ 2026-09-05. 20주차 재개: 2026-09-06(일)부터 32주차까지 매주 진행.
-// ⚠️ 주차 번호 확인 필요: 배포된 인쇄물은 2026-07-05 주차를 "21주차"로 표기(앱은 20주차).
-// 유인물 번호를 따르게 되면 RESUME_WEEK를 21로 올리고 assignments.ts의 주차 키도 함께 밀 것.
+// 1주차 시작: 2026-02-22(일). 20주차(7/5~7/11)까지 정상 진행 후 방학.
+// 방학: 2026-07-12 ~ 2026-09-05. 21주차 재개: 2026-09-06(일)부터 32주차까지 매주 진행.
+// 주차 번호는 훈련원 확인(2026-09-07) 결과 9/6 주일이 21주차로 확정됨 — 유인물 표기와 일치.
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000
 export const TOTAL_WEEKS = 32
 /** 방학 후 재개 주차 */
-export const RESUME_WEEK = 20
-/** 20주차 재개일 (방학 안내 표기용) */
+export const RESUME_WEEK = 21
+/** 21주차 재개일 (방학 안내 표기용) */
 export const RESUME_DATE = '2026-09-06'
 
 const WEEK1_START_MS = new Date('2026-02-22T00:00:00+09:00').getTime()
 const RESUME_START_MS = new Date(`${RESUME_DATE}T00:00:00+09:00`).getTime()
-/** 방학 시작 시점 = 원래 20주차 시작일(2026-07-05) */
+/** 방학 시작 시점 = 21주차 원래 시작일(2026-07-12) */
 const VACATION_START_MS = WEEK1_START_MS + (RESUME_WEEK - 1) * MS_PER_WEEK
 
-/** 현재 진행 주차 (방학 반영). 방학 중에는 재개 직전 주차(19)로 고정 */
+/** 현재 진행 주차 (방학 반영). 방학 중에는 재개 직전 주차(20)로 고정 */
 export function getCurrentWeek(now: Date = new Date()): number {
   const t = now.getTime()
   if (t >= RESUME_START_MS) {
@@ -37,7 +36,7 @@ export function getCurrentWeek(now: Date = new Date()): number {
   return Math.max(1, Math.min(RESUME_WEEK - 1, diff + 1))
 }
 
-/** 방학 기간 여부 (19주차 종료 후 ~ 20주차 재개 전) */
+/** 방학 기간 여부 (20주차 종료 후 ~ 21주차 재개 전) */
 export function isVacation(now: Date = new Date()): boolean {
   const t = now.getTime()
   return t >= VACATION_START_MS && t < RESUME_START_MS

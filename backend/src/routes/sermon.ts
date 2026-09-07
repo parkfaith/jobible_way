@@ -122,8 +122,8 @@ function getWeekDates(weekNumber: number) {
   // UTC 기준으로 날짜를 생성하여 시간대 영향 제거
   const start = new Date(Date.UTC(WEEK1_YEAR, WEEK1_MONTH - 1, WEEK1_DAY))
   start.setUTCDate(start.getUTCDate() + (weekNumber - 1) * 7)
-  // 방학 반영: 20주차부터는 9주(63일) 뒤로 이동 — 재개일 2026-09-06(일)
-  if (weekNumber >= 20) start.setUTCDate(start.getUTCDate() + 63)
+  // 방학 반영: 21주차부터는 8주(56일) 뒤로 이동 — 재개일 2026-09-06(일)
+  if (weekNumber >= 21) start.setUTCDate(start.getUTCDate() + 56)
 
   const sunday = new Date(start)
   const friday = new Date(start)

@@ -24,8 +24,8 @@ interface WeeklyData {
 function getWeekDates(weekNumber: number) {
   const start = new Date(Date.UTC(2026, 1, 22)) // 2026-02-22 일요일 (month는 0-based)
   start.setUTCDate(start.getUTCDate() + (weekNumber - 1) * 7)
-  // 방학 반영: 20주차부터는 9주(63일) 뒤로 이동 — 재개일 2026-09-06(일)
-  if (weekNumber >= 20) start.setUTCDate(start.getUTCDate() + 63)
+  // 방학 반영: 21주차부터는 8주(56일) 뒤로 이동 — 재개일 2026-09-06(일)
+  if (weekNumber >= 21) start.setUTCDate(start.getUTCDate() + 56)
   const friday = new Date(start)
   friday.setUTCDate(friday.getUTCDate() + 5)
 
