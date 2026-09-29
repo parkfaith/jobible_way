@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [1.5.2] — 2026-09-29
+> 23주차 이후 설교 영상 날짜를 추석 휴강에 맞춰 보정
+
+### 수정
+- **설교 영상 매핑 휴강 반영**: 1.5.1에서는 유인물 표기(9/20)를 따라 설교 매핑을 그대로 두었으나, 실제 23주차 진행 주간(9/27~)과 어긋나 `getWeekDates()`에 **23주차 이후 +7일** 오프셋 추가 (프론트 `SermonPage.tsx` / 백엔드 `sermon.ts` 양쪽). 결과: 22주차 = 9/13·9/18, **23주차 = 9/27·10/2**, 24주차 = 10/4·10/9
+- **23주차 설교요약 항목**: `9/20 주일예배` → `9/27 주일예배, 10/2 금요성령집회`
+
+### 배포 주의
+- **백엔드 배포 필요**: `backend/src/routes/sermon.ts`가 바뀌었으므로 `cd backend && npx wrangler deploy` 실행 필요
+
+### 수정 파일
+- `frontend/src/pages/SermonPage.tsx`, `backend/src/routes/sermon.ts`
+- `frontend/src/lib/assignments.ts`, `frontend/package.json`, `CHANGELOG.md`
+
 ## [1.5.1] — 2026-09-29
 > 추석 연휴 휴강 반영 및 23주차 과제물 추가
 

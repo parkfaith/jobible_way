@@ -124,6 +124,8 @@ function getWeekDates(weekNumber: number) {
   start.setUTCDate(start.getUTCDate() + (weekNumber - 1) * 7)
   // 방학 반영: 21주차부터는 8주(56일) 뒤로 이동 — 재개일 2026-09-06(일)
   if (weekNumber >= 21) start.setUTCDate(start.getUTCDate() + 56)
+  // 추석 휴강 반영: 23주차부터는 1주(7일) 더 뒤로 이동 — 23주차 = 2026-09-27(일) (lib/date.ts BREAK_AFTER_WEEK와 함께 수정)
+  if (weekNumber >= 23) start.setUTCDate(start.getUTCDate() + 7)
 
   const sunday = new Date(start)
   const friday = new Date(start)
