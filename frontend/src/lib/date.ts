@@ -13,12 +13,18 @@ export function formatDate(d: Date) {
 // 1주차 시작: 2026-02-22(일). 20주차(7/5~7/11)까지 정상 진행 후 방학.
 // 방학: 2026-07-12 ~ 2026-09-05. 21주차 재개: 2026-09-06(일)부터 32주차까지 매주 진행.
 // 주차 번호는 훈련원 확인(2026-09-07) 결과 9/6 주일이 21주차로 확정됨 — 유인물 표기와 일치.
+// 추석 연휴 휴강: 2026-09-20 ~ 09-26 한 주 휴강 → 22주차가 2주간 유지되고 23주차는 2026-09-27(일)부터.
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000
 export const TOTAL_WEEKS = 32
 /** 방학 후 재개 주차 */
 export const RESUME_WEEK = 21
 /** 21주차 재개일 (방학 안내 표기용) */
 export const RESUME_DATE = '2026-09-06'
+
+/** 휴강 직전 주차 (이 주차 다음에 휴강 주가 끼어 있음) */
+const BREAK_AFTER_WEEK = 22
+/** 휴강 주 수 */
+const BREAK_WEEKS = 1
 
 const WEEK1_START_MS = new Date('2026-02-22T00:00:00+09:00').getTime()
 const RESUME_START_MS = new Date(`${RESUME_DATE}T00:00:00+09:00`).getTime()
@@ -30,7 +36,12 @@ export function getCurrentWeek(now: Date = new Date()): number {
   const t = now.getTime()
   if (t >= RESUME_START_MS) {
     const diff = Math.floor((t - RESUME_START_MS) / MS_PER_WEEK)
-    return Math.min(TOTAL_WEEKS, RESUME_WEEK + diff)
+    const rawWeek = RESUME_WEEK + diff
+    // 휴강 주에는 직전 주차 유지, 이후 주차는 휴강 주 수만큼 당김
+    const week = rawWeek > BREAK_AFTER_WEEK
+      ? Math.max(BREAK_AFTER_WEEK, rawWeek - BREAK_WEEKS)
+      : rawWeek
+    return Math.min(TOTAL_WEEKS, week)
   }
   const diff = Math.floor((t - WEEK1_START_MS) / MS_PER_WEEK)
   return Math.max(1, Math.min(RESUME_WEEK - 1, diff + 1))
@@ -42,10 +53,11 @@ export function isVacation(now: Date = new Date()): boolean {
   return t >= VACATION_START_MS && t < RESUME_START_MS
 }
 
-/** 주차 번호 → 해당 주 시작 일요일 Date (방학 반영) */
+/** 주차 번호 → 해당 주 시작 일요일 Date (방학·휴강 반영) */
 export function getWeekStartDate(weekNumber: number): Date {
   if (weekNumber >= RESUME_WEEK) {
-    return new Date(RESUME_START_MS + (weekNumber - RESUME_WEEK) * MS_PER_WEEK)
+    const breakOffset = weekNumber > BREAK_AFTER_WEEK ? BREAK_WEEKS : 0
+    return new Date(RESUME_START_MS + (weekNumber - RESUME_WEEK + breakOffset) * MS_PER_WEEK)
   }
   return new Date(WEEK1_START_MS + (weekNumber - 1) * MS_PER_WEEK)
 }
